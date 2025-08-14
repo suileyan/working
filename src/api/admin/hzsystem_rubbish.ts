@@ -1,157 +1,82 @@
-import serviceAxios from "@/http";
-
 import type {
-  WasteItem,
-  DetectionRecord,
-  WasteQueryParams,
-  DetectionQueryParams,
-  WasteListResponse,
-  DetectionListResponse,
-  DetectionStatsResponse,
-  ImageDetectionRequest,
-  ImageDetectionResponse,
-  DetectionFeedbackRequest,
-  RubbishApiResponse,
-  BatchDeleteDetectionRequest,
-  ModelPerformanceResponse
+  DatasetResponse,
+  RubbishCategory,
+  RubbishCategoryListResponse,
+  CreateRubbishCategoryRequest,
+  RubbishItem,
+  RubbishItemListResponse,
+  CreateRubbishItemRequest,
+  DetectionRecordListResponse,
+  KnowledgeArticleListResponse,
+  StatisticsOverview
 } from '@/types/apis/hzsystem_rubbish_T'
+import serviceAxios from '@/http'
 
-// 获取垃圾分类列表
-export const getWasteItemsAPI = (params: WasteQueryParams): Promise<WasteListResponse> => {
+// 1.1 获取数据集概览
+export function getDatasetAPI(): Promise<DatasetResponse> {
   return serviceAxios({
-    url: '/admin/waste/items',
-    method: 'GET',
+    url: '/api/rubbish/api/dataset/',
+    method: 'get'
+  })
+}
+
+// 1.2 获取垃圾分类列表
+export function getRubbishCategoriesAPI(): Promise<RubbishCategoryListResponse> {
+  return serviceAxios({
+    url: '/api/rubbish/api/categories/',
+    method: 'get'
+  })
+}
+
+// 1.2 创建垃圾分类
+export function createRubbishCategoryAPI(data: CreateRubbishCategoryRequest): Promise<RubbishCategory> {
+  return serviceAxios({
+    url: '/api/rubbish/api/categories/',
+    method: 'post',
+    data
+  })
+}
+
+// 1.3 获取垃圾物品列表
+export function getRubbishItemsAPI(params?: { category?: number }): Promise<RubbishItemListResponse> {
+  return serviceAxios({
+    url: '/api/rubbish/api/items/',
+    method: 'get',
     params
   })
 }
 
-// 添加垃圾分类项
-export const addWasteItemAPI = (data: Omit<WasteItem, 'id' | 'created_at' | 'updated_at'>): Promise<RubbishApiResponse> => {
+// 1.3 创建垃圾物品
+export function createRubbishItemAPI(data: CreateRubbishItemRequest): Promise<RubbishItem> {
   return serviceAxios({
-    url: '/admin/waste/items',
-    method: 'POST',
+    url: '/api/rubbish/api/items/',
+    method: 'post',
     data
   })
 }
 
-// 编辑垃圾分类项
-export const editWasteItemAPI = (id: number, data: Partial<Omit<WasteItem, 'id' | 'created_at' | 'updated_at'>>): Promise<RubbishApiResponse> => {
+// 1.4 获取检测记录列表
+export function getDetectionRecordsAPI(params?: { user?: number; type?: string }): Promise<DetectionRecordListResponse> {
   return serviceAxios({
-    url: `/admin/waste/items/${id}`,
-    method: 'PUT',
-    data
-  })
-}
-
-// 获取垃圾分类项详情
-export const wasteItemDetailAPI = (id: number): Promise<{ data: WasteItem; message?: string }> => {
-  return serviceAxios({
-    url: `/admin/waste/items/${id}`,
-    method: 'GET'
-  })
-}
-
-// 删除垃圾分类项
-export const deleteWasteItemAPI = (id: number): Promise<RubbishApiResponse> => {
-  return serviceAxios({
-    url: `/admin/waste/items/${id}`,
-    method: 'DELETE'
-  })
-}
-
-// 获取检测记录列表
-export const getDetectionRecordsAPI = (params: DetectionQueryParams): Promise<DetectionListResponse> => {
-  return serviceAxios({
-    url: '/admin/detection/records',
-    method: 'GET',
+    url: '/api/rubbish/api/records/',
+    method: 'get',
     params
   })
 }
 
-// 获取检测记录详情
-export const detectionRecordDetailAPI = (id: number): Promise<{ data: DetectionRecord; message?: string }> => {
+// 1.5 获取知识文章列表
+export function getKnowledgeArticlesAPI(params?: { type?: string }): Promise<KnowledgeArticleListResponse> {
   return serviceAxios({
-    url: `/admin/detection/records/${id}`,
-    method: 'GET'
-  })
-}
-
-// 删除检测记录
-export const deleteDetectionRecordAPI = (id: number): Promise<RubbishApiResponse> => {
-  return serviceAxios({
-    url: `/admin/detection/records/${id}`,
-    method: 'DELETE'
-  })
-}
-
-// 批量删除检测记录
-export const batchDeleteDetectionRecordsAPI = (data: BatchDeleteDetectionRequest): Promise<RubbishApiResponse> => {
-  return serviceAxios({
-    url: '/admin/detection/records/batch-delete',
-    method: 'POST',
-    data
-  })
-}
-
-// 图片检测
-export const imageDetectionAPI = (data: ImageDetectionRequest): Promise<ImageDetectionResponse> => {
-  return serviceAxios({
-    url: '/api/detection/image',
-    method: 'POST',
-    data,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
-}
-
-// 检测反馈
-export const detectionFeedbackAPI = (data: DetectionFeedbackRequest): Promise<RubbishApiResponse> => {
-  return serviceAxios({
-    url: '/api/detection/feedback',
-    method: 'POST',
-    data
-  })
-}
-
-// 获取检测统计数据
-export const getDetectionStatsAPI = (): Promise<DetectionStatsResponse> => {
-  return serviceAxios({
-    url: '/admin/detection/stats',
-    method: 'GET'
-  })
-}
-
-// 获取模型性能数据
-export const getModelPerformanceAPI = (): Promise<ModelPerformanceResponse> => {
-  return serviceAxios({
-    url: '/admin/model/performance',
-    method: 'GET'
-  })
-}
-
-// 重新训练模型
-export const retrainModelAPI = (): Promise<RubbishApiResponse> => {
-  return serviceAxios({
-    url: '/admin/model/retrain',
-    method: 'POST'
-  })
-}
-
-// 获取垃圾分类知识库
-export const getWasteKnowledgeAPI = (params: { category?: string; keyword?: string }): Promise<WasteListResponse> => {
-  return serviceAxios({
-    url: '/api/waste/knowledge',
-    method: 'GET',
+    url: '/api/rubbish/api/knowledge/',
+    method: 'get',
     params
   })
 }
 
-// 搜索垃圾分类
-export const searchWasteAPI = (keyword: string): Promise<WasteListResponse> => {
+// 1.6 获取统计概览
+export function getStatisticsOverviewAPI(): Promise<StatisticsOverview> {
   return serviceAxios({
-    url: '/api/waste/search',
-    method: 'GET',
-    params: { keyword }
+    url: '/api/rubbish/api/statistics/overview/',
+    method: 'get'
   })
 }

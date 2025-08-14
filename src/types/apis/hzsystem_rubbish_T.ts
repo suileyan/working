@@ -1,142 +1,127 @@
-// 垃圾分类系统相关类型定义
-
-// 垃圾类型枚举
-export const WasteCategory = {
-  RECYCLABLE: 'recyclable',
-  KITCHEN: 'kitchen', 
-  HAZARDOUS: 'hazardous',
-  OTHER: 'other'
-} as const
-
-export type WasteCategory = typeof WasteCategory[keyof typeof WasteCategory]
-
-// 垃圾分类项
-export interface WasteItem {
-  id: number
-  name: string
-  category: WasteCategory
-  description?: string
-  disposal_guide?: string
-  image_url?: string
-  created_at?: string
-  updated_at?: string
+// 数据集概览
+export interface DatasetOverview {
+  total_categories: number;
+  total_images: number;
+  train_images: number;
+  val_images: number;
+  dataset_size: number;
 }
 
-// 检测记录
+export interface DatasetCategory {
+  id: string;
+  name: string;
+  train_count: number;
+  val_count: number;
+  total_count: number;
+  sample_images: string[];
+}
+
+export interface DatasetConfig {
+  train: string;
+  val: string;
+  nc: number;
+  names: string[];
+}
+
+export interface DatasetResponse {
+  overview: DatasetOverview;
+  categories: DatasetCategory[];
+  config: DatasetConfig;
+}
+
+// 垃圾分类
+export interface RubbishCategory {
+  id: number;
+  name: string;
+  category_type: string;
+  description: string;
+  disposal_method: string;
+  icon: string;
+  color: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type RubbishCategoryListResponse = RubbishCategory[];
+
+export interface CreateRubbishCategoryRequest {
+  name: string;
+  category_type: string;
+  description: string;
+  disposal_method: string;
+  icon: string;
+  color: string;
+}
+
+export interface RubbishItem {
+  id: number;
+  category_name: string;
+  category_type: string;
+  name: string;
+  description: string;
+  disposal_tips: string;
+  image: string | null;
+  created_at: string;
+  updated_at: string;
+  category: number;
+}
+
+export type RubbishItemListResponse = RubbishItem[];
+
+export interface CreateRubbishItemRequest {
+  name: string;
+  category: number;
+  description: string;
+  disposal_tips: string;
+  image?: string;
+}
+
 export interface DetectionRecord {
-  id: number
-  user_id?: number
-  image_url: string
-  detected_category: WasteCategory
-  confidence: number
-  detection_time: string
-  is_correct?: boolean
-  feedback?: string
+  id: number;
+  user_name: string;
+  category_name: string;
+  item_name: string;
+  detection_type: string;
+  original_file: string;
+  result_image: string;
+  confidence: number;
+  processing_time: number;
+  is_correct: boolean;
+  user_feedback: string;
+  detection_data: {
+    bbox: number[];
+    area: number;
+  };
+  created_at: string;
+  user: number;
+  detected_category: number;
+  detected_item: number;
 }
 
-// 检测统计
-export interface DetectionStats {
-  total_detections: number
-  today_detections: number
-  weekly_detections: number
-  monthly_detections: number
-  error_detections: number
-  accuracy_rate: number
-  category_distribution: Record<WasteCategory, number>
+export type DetectionRecordListResponse = DetectionRecord[];
+
+export interface KnowledgeArticle {
+  id: number;
+  title: string;
+  article_type: string;
+  content: string;
+  summary: string;
+  cover_image: string | null;
+  is_published: boolean;
+  view_count: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
-// 垃圾分类查询参数
-export interface WasteQueryParams {
-  category?: WasteCategory
-  keyword?: string
-  page: number
-  page_size: number
-}
+export type KnowledgeArticleListResponse = KnowledgeArticle[];
 
-// 检测记录查询参数
-export interface DetectionQueryParams {
-  user_id?: number
-  category?: WasteCategory
-  start_date?: string
-  end_date?: string
-  page: number
-  page_size: number
-}
-
-// 垃圾分类列表响应
-export interface WasteListResponse {
-  data: {
-    items: WasteItem[]
-    total: number
-  }
-  message?: string
-}
-
-// 检测记录列表响应
-export interface DetectionListResponse {
-  data: {
-    records: DetectionRecord[]
-    total: number
-  }
-  message?: string
-}
-
-// 检测统计响应
-export interface DetectionStatsResponse {
-  data: DetectionStats
-  message?: string
-}
-
-// 图片检测请求
-export interface ImageDetectionRequest {
-  image: File | string // File对象或base64字符串
-  user_id?: number
-}
-
-// 图片检测响应
-export interface ImageDetectionResponse {
-  data: {
-    category: WasteCategory
-    confidence: number
-    item_name?: string
-    description?: string
-    disposal_guide?: string
-    detection_id: number
-  }
-  message?: string
-}
-
-// 检测反馈请求
-export interface DetectionFeedbackRequest {
-  detection_id: number
-  is_correct: boolean
-  correct_category?: WasteCategory
-  feedback?: string
-}
-
-// API响应基础类型
-export interface RubbishApiResponse {
-  message?: string
-  msg?: string
-  data?: any
-}
-
-// 批量删除检测记录请求
-export interface BatchDeleteDetectionRequest {
-  detection_ids: number[]
-}
-
-// 模型性能数据
-export interface ModelPerformance {
-  accuracy: number
-  precision: number
-  recall: number
-  f1_score: number
-  last_updated: string
-}
-
-// 模型性能响应
-export interface ModelPerformanceResponse {
-  data: ModelPerformance
-  message?: string
+export interface StatisticsOverview {
+  total_detections: number;
+  total_users: number;
+  accuracy_rate: number;
+  category_distribution: {
+    detected_category__name: string;
+    count: number;
+  }[];
 }
