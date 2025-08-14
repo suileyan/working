@@ -197,6 +197,19 @@ const iconVariants = {
   },
   transition: { duration: 0.6, delay: 0.3, ease: ["easeOut"] },
 };
+import { getStatisticsOverviewAPI } from '@/api/admin/hzsystem_rubbish'
+import { ref, onMounted } from 'vue'
+const statistics = ref()
+const loading = ref(false)
+const fetchStatistics = async () => {
+  loading.value = true
+  try {
+    statistics.value = await getStatisticsOverviewAPI()
+  } finally {
+    loading.value = false
+  }
+}
+onMounted(fetchStatistics)
 </script>
 
 <template>
@@ -519,3 +532,70 @@ const iconVariants = {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 </style>
+
+const dashboardData = computed(() => statistics.value ? {
+  totalUsers: {
+    value: statistics.value.total_users,
+    change: '',
+    label: '总用户数',
+  },
+  totalDetections: {
+    value: statistics.value.total_detections,
+    change: '',
+    label: '总检测次数',
+  },
+  averageAccuracy: {
+    value: statistics.value.accuracy_rate ? (statistics.value.accuracy_rate * 100).toFixed(1) + '%' : '--',
+    change: '',
+    label: '平均准确率',
+  },
+  averageResponseTime: {
+    value: '--',
+    change: '',
+    label: '平均响应时间',
+  },
+} : {
+  totalUsers: { value: 0, change: '', label: '总用户数' },
+  totalDetections: { value: 0, change: '', label: '总检测次数' },
+  averageAccuracy: { value: '--', change: '', label: '平均准确率' },
+  averageResponseTime: { value: '--', change: '', label: '平均响应时间' },
+})
+const wasteDistributionData = computed(() => statistics.value ? {
+  title: { text: '垃圾分类分布', left: 'center' },
+  tooltip: { trigger: 'item' },
+  legend: { orient: 'vertical', left: 'left' },
+  series: [
+    {
+      name: '垃圾类型',
+      type: 'pie',
+      radius: '50%',
+      data: statistics.value.category_distribution.map(item => ({ value: item.count, name: item.detected_category__name })),
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+        },
+      },
+    },
+  ],
+} : {
+  title: { text: '垃圾分类分布', left: 'center' },
+  tooltip: { trigger: 'item' },
+  legend: { orient: 'vertical', left: 'left' },
+  series: [
+    {
+      name: '垃圾类型',
+      type: 'pie',
+      radius: '50%',
+      data: [],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+        },
+      },
+    },
+  ],
+})
