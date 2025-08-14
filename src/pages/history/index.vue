@@ -1,40 +1,45 @@
 <template>
   <div class="min-h-screen bg-base-100">
-    <!-- 页面标题 -->
-    <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
-      <div class="container mx-auto px-4 text-center">
-        <h1 class="text-5xl font-bold mb-4" v-motion :initial="{ opacity: 0, y: 50 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }">
-          检测历史
-        </h1>
-        <p class="text-xl opacity-90 max-w-2xl mx-auto" v-motion :initial="{ opacity: 0, y: 30 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 200 } }">
-          查看您的垃圾分类检测记录和统计数据
-        </p>
-      </div>
-    </div>
 
-    <div class="container mx-auto px-4 py-12">
-      <!-- 统计概览 -->
-      <div class="grid md:grid-cols-4 gap-6 mb-12">
-        <div v-for="(stat, index) in historyStats" :key="stat.label" class="card bg-base-100 shadow-xl" v-motion
-          :initial="{ opacity: 0, y: 50 }" :enter="{ opacity: 1, y: 0, transition: { delay: 200 + index * 100 } }">
-          <div class="card-body text-center">
-            <div class="text-4xl mb-2">
-              <el-icon :class="stat.color">
-                <component :is="stat.iconComponent" />
+    <div class="min-h-full w-full">
+      <!-- Page Header -->
+      <section class="relative overflow-hidden">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div class="flex items-center gap-4">
+            <div
+              class="rounded-full w-14 h-14 bg-purple-100 text-purple-600 flex items-center justify-center shadow-sm">
+              <el-icon class="text-3xl">
+                <TrendCharts />
               </el-icon>
             </div>
-            <div class="text-3xl font-bold" :class="stat.color">{{ stat.value }}</div>
-            <div class="text-sm text-base-content/70">{{ stat.label }}</div>
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">检测历史</h1>
+              <p class="text-gray-500 mt-1 text-sm">查看您的垃圾分类检测记录和统计数据</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- 筛选和搜索 -->
-      <div class="card bg-base-100 shadow-xl mb-8" v-motion :initial="{ opacity: 0, y: 30 }"
-        :enter="{ opacity: 1, y: 0, transition: { delay: 600 } }">
-        <div class="card-body">
+      <!-- 统计概览 -->
+      <section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div v-for="(stat, index) in historyStats" :key="stat.label"
+            class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="text-center">
+              <div class="rounded-full w-14 h-14 mx-auto mb-2 flex items-center justify-center shadow-sm"
+                :class="stat.color">
+                <el-icon class="text-3xl">
+                  <component :is="stat.iconComponent" />
+                </el-icon>
+              </div>
+              <div class="text-3xl font-bold" :class="stat.color">{{ stat.value }}</div>
+              <div class="text-sm text-base-content/70">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 筛选和搜索 -->
+        <div class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm mb-8">
           <div class="flex flex-col md:flex-row gap-4 items-center">
             <!-- 搜索框 -->
             <div class="form-control flex-1">
@@ -78,19 +83,17 @@
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- 历史记录列表 -->
-      <div v-if="filteredHistory.length > 0" class="space-y-4">
-        <div v-for="(record, index) in paginatedHistory" :key="record.id"
-          class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300" v-motion
-          :initial="{ opacity: 0, x: -50 }" :enter="{ opacity: 1, x: 0, transition: { delay: index * 50 } }">
-          <div class="card-body">
+        <!-- 历史记录列表 -->
+        <div v-if="filteredHistory.length > 0" class="space-y-4">
+          <div v-for="(record, index) in paginatedHistory" :key="record.id"
+            class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow duration-300"
+            v-motion :initial="{ opacity: 0, x: -50 }" :enter="{ opacity: 1, x: 0, transition: { delay: index * 50 } }">
             <div class="flex items-center justify-between">
               <!-- 检测结果信息 -->
               <div class="flex items-center gap-4">
-                <div class="text-4xl">
-                  <el-icon :class="record.color">
+                <div class="rounded-full w-12 h-12 flex items-center justify-center shadow-sm" :class="record.color">
+                  <el-icon class="text-2xl">
                     <component :is="record.icon" />
                   </el-icon>
                 </div>
@@ -124,69 +127,75 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 空状态 -->
-      <div v-else class="text-center py-20">
-        <div class="space-y-4" v-motion :initial="{ opacity: 0, y: 50 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 300 } }">
-          <div class="text-8xl text-base-content/30">📋</div>
-          <h3 class="text-2xl font-bold text-base-content/70">暂无检测记录</h3>
-          <p class="text-base-content/50">开始您的第一次垃圾分类检测吧！</p>
-          <router-link to="/detection" class="btn btn-primary btn-lg">
-            开始检测
-          </router-link>
+        <!-- 空状态 -->
+        <div v-else class="text-center py-20">
+          <div class="space-y-4" v-motion :initial="{ opacity: 0, y: 50 }"
+            :enter="{ opacity: 1, y: 0, transition: { delay: 300 } }">
+            <div class="text-8xl text-base-content/30">📋</div>
+            <h3 class="text-2xl font-bold text-base-content/70">暂无检测记录</h3>
+            <p class="text-base-content/50">开始您的第一次垃圾分类检测吧！</p>
+            <router-link to="/detection" class="btn btn-primary btn-lg">
+              开始检测
+            </router-link>
+          </div>
         </div>
-      </div>
 
-      <!-- 分页 -->
-      <div v-if="totalPages > 1" class="flex justify-center mt-12">
-        <div class="btn-group">
-          <button @click="currentPage--" :disabled="currentPage === 1" class="btn">
-            «
-          </button>
+        <!-- 分页 -->
+        <div v-if="totalPages > 1" class="flex justify-center mt-12">
+          <div class="btn-group">
+            <button @click="currentPage--" :disabled="currentPage === 1" class="btn">
+              «
+            </button>
 
-          <button v-for="page in visiblePages" :key="page" @click="currentPage = page"
-            :class="['btn', { 'btn-active': page === currentPage }]">
-            {{ page }}
-          </button>
+            <button v-for="page in visiblePages" :key="page"
+              @click="typeof page === 'number' ? currentPage = page : null" :disabled="typeof page === 'string'"
+              :class="['btn', { 'btn-active': page === currentPage }]">
+              {{ page }}
+            </button>
 
-          <button @click="currentPage++" :disabled="currentPage === totalPages" class="btn">
-            »
-          </button>
+            <button @click="currentPage++" :disabled="currentPage === totalPages" class="btn">
+              »
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- 详情模态框 -->
-    <div v-if="selectedRecord" class="modal modal-open">
-      <div class="modal-box max-w-2xl">
-        <h3 class="font-bold text-lg mb-4">检测详情</h3>
+      <!-- 详情模态框 -->
+      <div v-if="selectedRecord" class="modal modal-open">
+        <div class="modal-box max-w-2xl">
+          <h3 class="font-bold text-lg mb-4">检测详情</h3>
 
-        <div class="space-y-4">
-          <!-- 基本信息 -->
-          <div class="flex items-center gap-4">
-            <div class="text-6xl">{{ selectedRecord.icon }}</div>
-            <div>
-              <h4 class="text-2xl font-bold" :class="selectedRecord.color">{{ selectedRecord.category }}</h4>
-              <p class="text-base-content/70">置信度: {{ selectedRecord.confidence }}%</p>
-              <p class="text-sm text-base-content/50">{{ formatTime(selectedRecord.timestamp) }}</p>
+          <div class="space-y-4">
+            <!-- 基本信息 -->
+            <div class="flex items-center gap-4">
+              <div class="rounded-full w-16 h-16 flex items-center justify-center shadow-sm"
+                :class="selectedRecord.color">
+                <el-icon class="text-3xl">
+                  <component :is="selectedRecord.icon" />
+                </el-icon>
+              </div>
+              <div>
+                <h4 class="text-2xl font-bold" :class="selectedRecord.color">{{ selectedRecord.category }}</h4>
+                <p class="text-base-content/70">置信度: {{ selectedRecord.confidence }}%</p>
+                <p class="text-sm text-base-content/50">{{ formatTime(selectedRecord.timestamp) }}</p>
+              </div>
+            </div>
+
+            <!-- 投放提示 -->
+            <div v-if="selectedRecord.tips" class="bg-base-200 rounded-lg p-4">
+              <h5 class="font-semibold mb-2">💡 投放提示</h5>
+              <ul class="space-y-1">
+                <li v-for="tip in selectedRecord.tips" :key="tip" class="text-sm">
+                  • {{ tip }}
+                </li>
+              </ul>
             </div>
           </div>
 
-          <!-- 投放提示 -->
-          <div v-if="selectedRecord.tips" class="bg-base-200 rounded-lg p-4">
-            <h5 class="font-semibold mb-2">💡 投放提示</h5>
-            <ul class="space-y-1">
-              <li v-for="tip in selectedRecord.tips" :key="tip" class="text-sm">
-                • {{ tip }}
-              </li>
-            </ul>
+          <div class="modal-action">
+            <button @click="selectedRecord = null" class="btn">关闭</button>
           </div>
-        </div>
-
-        <div class="modal-action">
-          <button @click="selectedRecord = null" class="btn">关闭</button>
         </div>
       </div>
     </div>
@@ -201,7 +210,7 @@ import { Search, Delete, View, Refresh, Apple, Warning, DeleteFilled, TrendChart
 interface HistoryRecord {
   id: number
   category: string
-  icon: string
+  icon: any // Vue组件类型
   color: string
   confidence: number
   timestamp: string
@@ -226,7 +235,7 @@ const generateMockHistory = (): HistoryRecord[] => {
     { name: '其他垃圾', icon: DeleteFilled, color: 'text-gray-600' }
   ]
 
-  const tips = {
+  const tips: Record<string, string[]> = {
     '可回收垃圾': ['请清洗干净后投放', '塑料瓶请压扁节省空间', '纸张请保持干燥'],
     '厨余垃圾': ['请沥干水分后投放', '大骨头属于其他垃圾', '包装袋请取出'],
     '有害垃圾': ['请投放到专门的有害垃圾桶', '电池请用胶带包裹电极', '过期药品请保持原包装'],
@@ -248,7 +257,7 @@ const generateMockHistory = (): HistoryRecord[] => {
       color: category.color,
       confidence,
       timestamp,
-      tips: tips[category.name]
+      tips: tips[category.name] || []
     })
   }
 
@@ -348,7 +357,7 @@ const paginatedHistory = computed(() => {
 })
 
 const visiblePages = computed(() => {
-  const pages = []
+  const pages: (number | string)[] = []
   const total = totalPages.value
   const current = currentPage.value
 

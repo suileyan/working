@@ -1,167 +1,325 @@
 <template>
-  <div class="min-h-screen bg-base-100">
-    <!-- 页面标题 -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-16">
-      <div class="container mx-auto px-4 text-center">
-        <h1 class="text-5xl font-bold mb-4" v-motion :initial="{ opacity: 0, y: 50 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }">
-          智能垃圾检测
-        </h1>
-        <p class="text-xl opacity-90 max-w-2xl mx-auto" v-motion :initial="{ opacity: 0, y: 30 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 200 } }">
-          选择检测方式，AI将帮您准确识别垃圾分类
-        </p>
+  <div class="min-h-full w-full">
+    <!-- Page Header -->
+    <section class="relative overflow-hidden">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div class="flex items-center gap-4">
+          <div class="rounded-full w-14 h-14 bg-green-100 text-green-600 flex items-center justify-center shadow-sm">
+            <el-icon class="text-3xl">
+              <MagicStick />
+            </el-icon>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">垃圾分类检测</h1>
+            <p class="text-gray-500 mt-1 text-sm">上传图片或拍照，智能识别垃圾类别</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 检测方式选择 -->
-    <div class="container mx-auto px-4 py-12">
-      <div class="grid md:grid-cols-3 gap-8 mb-12">
+    <!-- 检测统计 -->
+    <section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div v-for="(stat, index) in detectionStats" :key="stat.label"
+          class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div class="text-center">
+            <div class="rounded-full w-14 h-14 mx-auto mb-2 flex items-center justify-center shadow-sm"
+              :class="stat.color">
+              <el-icon class="text-3xl">
+                <component :is="stat.iconComponent" />
+              </el-icon>
+            </div>
+            <div class="text-3xl font-bold" :class="stat.color">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500">{{ stat.label }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 检测方式选择 -->
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
         <div v-for="method in detectionMethods" :key="method.id"
-          class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
+          class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
           :class="{ 'ring-2 ring-primary': selectedMethod === method.id }" @click="selectMethod(method.id)" v-motion
           :initial="{ opacity: 0, y: 50 }" :enter="{ opacity: 1, y: 0, transition: { delay: method.delay } }">
-          <div class="card-body text-center">
-            <div class="text-5xl mb-4">{{ method.icon }}</div>
-            <h3 class="card-title justify-center text-xl mb-2">{{ method.title }}</h3>
-            <p class="text-base-content/70">{{ method.description }}</p>
+          <div class="text-center">
+            <div
+              class="rounded-full w-14 h-14 mx-auto mb-4 bg-green-100 text-green-600 flex items-center justify-center shadow-sm">
+              <el-icon class="text-3xl">
+                <component :is="method.iconComponent" />
+              </el-icon>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">{{ method.title }}</h3>
+            <p class="text-gray-500 text-sm">{{ method.description }}</p>
           </div>
         </div>
       </div>
 
       <!-- 检测区域 -->
-      <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-          <!-- 图片检测 -->
-          <div v-if="selectedMethod === 1" class="space-y-6">
-            <h2 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-              <el-icon class="text-primary">
-                <Picture />
-              </el-icon>
-              图片检测
-            </h2>
+      <div class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm">
+        <!-- 图片检测 -->
+        <div v-if="selectedMethod === 1" class="space-y-6">
+          <h2 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+            <el-icon class="text-primary">
+              <Picture />
+            </el-icon>
+            图片检测
+          </h2>
 
-            <!-- 文件上传区域 -->
-            <div
-              class="border-2 border-dashed border-base-300 rounded-lg p-12 text-center hover:border-primary transition-colors"
-              @dragover.prevent @drop.prevent="handleFileDrop" @click="$refs.imageInput.click()">
-              <div v-if="!selectedImage" class="space-y-4">
-                <div class="text-6xl text-base-content/30">📁</div>
-                <p class="text-lg font-medium">点击或拖拽图片到此处</p>
-                <p class="text-sm text-base-content/60">支持 JPG、PNG 格式，最大 5MB</p>
-              </div>
-
-              <div v-else class="space-y-4">
-                <img :src="selectedImage" alt="Selected image" class="max-w-full max-h-64 mx-auto rounded-lg shadow-lg">
-                <p class="text-sm text-base-content/60">{{ selectedImageName }}</p>
-                <button @click.stop="clearImage" class="btn btn-outline btn-sm">重新选择</button>
-              </div>
+          <!-- 文件上传区域 -->
+          <div
+            class="border-2 border-dashed border-gray-200 rounded-lg p-12 text-center hover:border-primary transition-colors"
+            @dragover.prevent @drop.prevent="handleFileDrop" @click="$refs.imageInput.click()">
+            <div v-if="!selectedImage" class="space-y-4">
+              <div class="text-6xl text-gray-300">📁</div>
+              <p class="text-lg font-medium">点击或拖拽图片到此处</p>
+              <p class="text-sm text-gray-500">支持 JPG、PNG 格式，最大 5MB</p>
             </div>
 
-            <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect">
-
-            <div class="text-center">
-              <button @click="detectImage" :disabled="!selectedImage || isDetecting" class="btn btn-primary btn-lg">
-                <span v-if="isDetecting" class="loading loading-spinner"></span>
-                {{ isDetecting ? '检测中...' : '开始检测' }}
-              </button>
+            <div v-else class="space-y-4">
+              <img :src="selectedImage" alt="Selected image" class="max-w-full max-h-64 mx-auto rounded-lg shadow-lg">
+              <p class="text-sm text-gray-500">{{ selectedImageName }}</p>
+              <button @click.stop="clearImage" class="btn btn-outline btn-sm">重新选择</button>
             </div>
           </div>
 
-          <!-- 视频检测 -->
-          <div v-else-if="selectedMethod === 2" class="space-y-6">
-            <h2 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-              <el-icon class="text-primary">
-                <VideoCamera />
-              </el-icon>
-              视频检测
-            </h2>
+          <input ref="imageInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect">
 
-            <!-- 视频上传区域 -->
-            <div
-              class="border-2 border-dashed border-base-300 rounded-lg p-12 text-center hover:border-primary transition-colors"
-              @dragover.prevent @drop.prevent="handleVideoDrop" @click="$refs.videoInput.click()">
-              <div v-if="!selectedVideo" class="space-y-4">
-                <div class="text-6xl text-base-content/30">🎬</div>
-                <p class="text-lg font-medium">点击或拖拽视频到此处</p>
-                <p class="text-sm text-base-content/60">支持 MP4、AVI 格式，最大 50MB</p>
-              </div>
+          <div class="text-center">
+            <button @click="detectImage" :disabled="!selectedImage || isDetecting" class="btn btn-primary btn-lg">
+              <span v-if="isDetecting" class="loading loading-spinner"></span>
+              {{ isDetecting ? '检测中...' : '开始检测' }}
+            </button>
+          </div>
+        </div>
 
-              <div v-else class="space-y-4">
-                <video :src="selectedVideo" controls class="max-w-full max-h-64 mx-auto rounded-lg shadow-lg"></video>
-                <p class="text-sm text-base-content/60">{{ selectedVideoName }}</p>
-                <button @click.stop="clearVideo" class="btn btn-outline btn-sm">重新选择</button>
-              </div>
+        <!-- 视频检测 -->
+        <div v-else-if="selectedMethod === 2" class="space-y-6">
+          <h2 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+            <el-icon class="text-primary">
+              <VideoCamera />
+            </el-icon>
+            视频检测
+          </h2>
+
+          <!-- 视频上传区域 -->
+          <div
+            class="border-2 border-dashed border-gray-200 rounded-lg p-12 text-center hover:border-primary transition-colors"
+            @dragover.prevent @drop.prevent="handleVideoDrop" @click="$refs.videoInput.click()">
+            <div v-if="!selectedVideo" class="space-y-4">
+              <div class="text-6xl text-gray-300">🎬</div>
+              <p class="text-lg font-medium">点击或拖拽视频到此处</p>
+              <p class="text-sm text-gray-500">支持 MP4、AVI 格式，最大 50MB</p>
             </div>
 
-            <input ref="videoInput" type="file" accept="video/*" class="hidden" @change="handleVideoSelect">
-
-            <div class="text-center">
-              <button @click="detectVideo" :disabled="!selectedVideo || isDetecting" class="btn btn-primary btn-lg">
-                <span v-if="isDetecting" class="loading loading-spinner"></span>
-                {{ isDetecting ? '检测中...' : '开始检测' }}
-              </button>
+            <div v-else class="space-y-4">
+              <video :src="selectedVideo" controls class="max-w-full max-h-64 mx-auto rounded-lg shadow-lg"></video>
+              <p class="text-sm text-gray-500">{{ selectedVideoName }}</p>
+              <button @click.stop="clearVideo" class="btn btn-outline btn-sm">重新选择</button>
             </div>
           </div>
 
-          <!-- 实时摄像头检测 -->
-          <div v-else-if="selectedMethod === 3" class="space-y-6">
-            <h2 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-              <el-icon class="text-primary">
-                <Camera />
-              </el-icon>
-              实时摄像头检测
-            </h2>
+          <input ref="videoInput" type="file" accept="video/*" class="hidden" @change="handleVideoSelect">
 
-            <!-- 摄像头预览区域 -->
-            <div class="bg-black rounded-lg overflow-hidden">
-              <video ref="cameraVideo" :class="{ 'hidden': !isCameraActive }" class="w-full h-64 object-cover" autoplay
-                muted></video>
+          <div class="text-center">
+            <button @click="detectVideo" :disabled="!selectedVideo || isDetecting" class="btn btn-primary btn-lg">
+              <span v-if="isDetecting" class="loading loading-spinner"></span>
+              {{ isDetecting ? '检测中...' : '开始检测' }}
+            </button>
+          </div>
+        </div>
 
-              <div v-if="!isCameraActive" class="h-64 flex items-center justify-center text-white">
-                <div class="text-center space-y-4">
-                  <div class="text-6xl text-primary">
-                    <el-icon :size="72">
-                      <Camera />
-                    </el-icon>
-                  </div>
-                  <p class="text-lg">点击下方按钮启动摄像头</p>
+        <!-- 实时摄像头检测 -->
+        <div v-else-if="selectedMethod === 3" class="space-y-6">
+          <h2 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+            <el-icon class="text-primary">
+              <Camera />
+            </el-icon>
+            实时摄像头检测
+          </h2>
+
+          <!-- 摄像头预览区域 -->
+          <div class="bg-black rounded-lg overflow-hidden">
+            <video ref="cameraVideo" :class="{ 'hidden': !isCameraActive }" class="w-full h-64 object-cover" autoplay
+              muted></video>
+
+            <div v-if="!isCameraActive" class="h-64 flex items-center justify-center text-white">
+              <div class="text-center space-y-4">
+                <div class="text-6xl text-primary">
+                  <el-icon :size="72">
+                    <Camera />
+                  </el-icon>
                 </div>
+                <p class="text-lg">点击下方按钮启动摄像头</p>
               </div>
             </div>
+          </div>
 
-            <div class="flex justify-center space-x-4">
-              <button v-if="!isCameraActive" @click="startCamera" class="btn btn-primary">
-                启动摄像头
+          <div class="flex justify-center space-x-4">
+            <button v-if="!isCameraActive" @click="startCamera" class="btn btn-primary">
+              启动摄像头
+            </button>
+
+            <template v-else>
+              <button @click="capturePhoto" :disabled="isDetecting" class="btn btn-primary">
+                <span v-if="isDetecting" class="loading loading-spinner"></span>
+                {{ isDetecting ? '检测中...' : '拍照检测' }}
               </button>
 
-              <template v-else>
-                <button @click="capturePhoto" :disabled="isDetecting" class="btn btn-primary">
-                  <span v-if="isDetecting" class="loading loading-spinner"></span>
-                  {{ isDetecting ? '检测中...' : '拍照检测' }}
-                </button>
-
-                <button @click="stopCamera" class="btn btn-outline">
-                  关闭摄像头
-                </button>
-              </template>
-            </div>
+              <button @click="stopCamera" class="btn btn-outline">
+                关闭摄像头
+              </button>
+            </template>
           </div>
         </div>
       </div>
 
-      <!-- 检测结果 -->
-      <div v-if="detectionResult" class="mt-8">
-        <DetectionResult :result="detectionResult" @close="clearResult" />
+      <!-- 检测结果列表 -->
+      <div v-if="detectionResults.length > 0" class="mt-8 space-y-4">
+        <div v-for="(result, index) in detectionResults" :key="result.id"
+          class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow duration-300"
+          v-motion :initial="{ opacity: 0, x: -50 }" :enter="{ opacity: 1, x: 0, transition: { delay: index * 50 } }">
+          <div class="flex items-center justify-between">
+            <!-- 检测结果信息 -->
+            <div class="flex items-center gap-4">
+              <div class="rounded-full w-12 h-12 flex items-center justify-center shadow-sm" :class="result.color">
+                <el-icon class="text-2xl">
+                  <component :is="result.icon" />
+                </el-icon>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold" :class="result.color">{{ result.category }}</h3>
+                <p class="text-sm text-gray-500">置信度: {{ result.confidence }}%</p>
+                <p class="text-xs text-gray-400">{{ formatTime(result.timestamp) }}</p>
+              </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="flex items-center gap-2">
+              <button @click="viewDetails(result)" class="btn btn-ghost btn-sm" title="查看详情">
+                <el-icon class="text-info">
+                  <View />
+                </el-icon>
+              </button>
+              <button @click="deleteResult(result.id)" class="btn btn-ghost btn-sm text-error" title="删除">
+                <el-icon class="text-error">
+                  <Delete />
+                </el-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- 检测提示预览 -->
+          <div v-if="result.tips && result.tips.length > 0" class="mt-4 p-3 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-600">💡 {{ result.tips[0] }}<span v-if="result.tips.length > 1"
+                class="text-gray-400">等 {{ result.tips.length }} 条提示</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-else class="mt-8 text-center py-20">
+        <div class="space-y-4" v-motion :initial="{ opacity: 0, y: 50 }"
+          :enter="{ opacity: 1, y: 0, transition: { delay: 300 } }">
+          <div class="text-8xl text-gray-300">🧪</div>
+          <h3 class="text-2xl font-bold text-gray-500">暂无检测结果</h3>
+          <p class="text-gray-400">上传图片或拍照，开始垃圾分类检测吧！</p>
+        </div>
+      </div>
+
+      <!-- 分页 -->
+      <div v-if="totalPages > 1" class="flex justify-center mt-12">
+        <div class="btn-group">
+          <button @click="currentPage--" :disabled="currentPage === 1" class="btn">
+            «
+          </button>
+
+          <button v-for="page in visiblePages" :key="page" @click="currentPage = page"
+            :class="['btn', { 'btn-active': page === currentPage }]">
+            {{ page }}
+          </button>
+
+          <button @click="currentPage++" :disabled="currentPage === totalPages" class="btn">
+            »
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 检测结果 -->
+    <div v-if="detectionResult" class="mt-8">
+      <DetectionResult :result="detectionResult" @close="clearResult" />
+    </div>
+
+    <!-- 详情模态框 -->
+    <div v-if="selectedResult" class="modal modal-open">
+      <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">检测详情</h3>
+
+        <div class="space-y-4">
+          <!-- 基本信息 -->
+          <div class="flex items-center gap-4">
+            <div class="rounded-full w-16 h-16 flex items-center justify-center shadow-sm"
+              :class="selectedResult.color">
+              <el-icon class="text-3xl">
+                <component :is="selectedResult.icon" />
+              </el-icon>
+            </div>
+            <div>
+              <h4 class="text-2xl font-bold" :class="selectedResult.color">{{ selectedResult.category }}</h4>
+              <p class="text-gray-500">置信度: {{ selectedResult.confidence }}%</p>
+              <p class="text-sm text-gray-400">{{ formatTime(selectedResult.timestamp) }}</p>
+            </div>
+          </div>
+
+          <!-- 投放提示 -->
+          <div v-if="selectedResult.tips" class="bg-gray-50 rounded-lg p-4">
+            <h5 class="font-semibold mb-2">💡 投放提示</h5>
+            <ul class="space-y-1">
+              <li v-for="tip in selectedResult.tips" :key="tip" class="text-sm">
+                • {{ tip }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-action">
+          <button @click="selectedResult = null" class="btn">关闭</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Picture, VideoCamera, Camera, Apple, Warning, DeleteFilled } from '@element-plus/icons-vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { Picture, VideoCamera, Camera, Apple, Warning, DeleteFilled, MagicStick, UploadFilled, View, Delete } from '@element-plus/icons-vue'
 import DetectionResult from 'components/DetectionResult.vue'
+
+// 接口定义
+interface DetectionMethod {
+  id: number
+  iconComponent: any
+  title: string
+  description: string
+  delay: number
+}
+
+interface DetectionStat {
+  label: string
+  value: string
+  iconComponent: any
+  color: string
+}
+
+interface DetectionResultItem {
+  id: string | number
+  category: string
+  iconComponent: any
+  color: string
+  confidence: number
+  timestamp: string
+  tips: string[]
+}
 
 // 检测方式数据
 const detectionMethods = [
@@ -188,6 +346,34 @@ const detectionMethods = [
   }
 ]
 
+// 检测统计数据
+const detectionStats = [
+  {
+    label: '今日检测',
+    value: '24',
+    iconComponent: MagicStick,
+    color: 'bg-blue-100 text-blue-600'
+  },
+  {
+    label: '可回收垃圾',
+    value: '12',
+    iconComponent: Apple,
+    color: 'bg-green-100 text-green-600'
+  },
+  {
+    label: '有害垃圾',
+    value: '3',
+    iconComponent: Warning,
+    color: 'bg-red-100 text-red-600'
+  },
+  {
+    label: '其他垃圾',
+    value: '9',
+    iconComponent: DeleteFilled,
+    color: 'bg-gray-100 text-gray-600'
+  }
+]
+
 // 响应式数据
 const selectedMethod = ref(1)
 const selectedImage = ref('')
@@ -196,9 +382,27 @@ const selectedVideo = ref('')
 const selectedVideoName = ref('')
 const isCameraActive = ref(false)
 const isDetecting = ref(false)
-const detectionResult = ref(null)
-const cameraVideo = ref(null)
-const cameraStream = ref(null)
+const detectionResult = ref<DetectionResultItem | null>(null)
+const detectionResults = ref<DetectionResultItem[]>([])
+const selectedResult = ref<DetectionResultItem | null>(null)
+const cameraVideo = ref<HTMLVideoElement | null>(null)
+const cameraStream = ref<MediaStream | null>(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+// 计算属性
+const totalPages = computed(() => Math.ceil(detectionResults.value.length / pageSize.value))
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const pages: (number | string)[] = []
+
+  for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+    pages.push(i)
+  }
+
+  return pages
+})
 
 // 方法选择
 const selectMethod = (methodId: number) => {
@@ -350,9 +554,9 @@ const detectImageData = (imageData: string) => {
 }
 
 // 生成模拟检测结果
-const generateMockResult = () => {
+const generateMockResult = (): DetectionResultItem => {
   const categories = [
-    { name: '可回收垃圾', iconComponent:null, color: 'text-blue-600' },
+    { name: '可回收垃圾', iconComponent: null, color: 'text-blue-600' },
     { name: '厨余垃圾', iconComponent: Apple, color: 'text-green-600' },
     { name: '有害垃圾', iconComponent: Warning, color: 'text-red-600' },
     { name: '其他垃圾', iconComponent: DeleteFilled, color: 'text-gray-600' }
@@ -362,6 +566,7 @@ const generateMockResult = () => {
   const confidence = (Math.random() * 20 + 80).toFixed(1) // 80-100%
 
   return {
+    id: Date.now().toString(),
     category: randomCategory.name,
     iconComponent: randomCategory.iconComponent,
     color: randomCategory.color,
@@ -373,7 +578,7 @@ const generateMockResult = () => {
 
 // 获取分类提示
 const getTipsForCategory = (category: string) => {
-  const tips = {
+  const tips: Record<string, string[]> = {
     '可回收垃圾': [
       '请清洗干净后投放',
       '塑料瓶请压扁节省空间',
@@ -401,6 +606,27 @@ const getTipsForCategory = (category: string) => {
 
 const clearResult = () => {
   detectionResult.value = null
+}
+
+// 模拟方法
+const openUploadModal = () => {
+  // 模拟上传功能
+}
+
+const openCameraModal = () => {
+  // 模拟摄像头功能
+}
+
+const viewDetails = (result: DetectionResultItem) => {
+  selectedResult.value = result
+}
+
+const deleteResult = (id: string | number) => {
+  detectionResults.value = detectionResults.value.filter((r: DetectionResultItem) => r.id !== id)
+}
+
+const formatTime = (timestamp: string) => {
+  return new Date(timestamp).toLocaleString()
 }
 
 // 生命周期

@@ -1,12 +1,7 @@
 <template>
   <div class="min-h-screen bg-base-100">
     <!-- 页面标题和用户个人信息 -->
-    <div class="relative bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 text-white py-20 overflow-hidden">
-      <!-- 背景装饰 -->
-      <div class="absolute inset-0 bg-black/10">
-        <div class="absolute -top-10 -right-10 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-2xl"></div>
-      </div>
+    <div class="mt-0.5 flex py-20 bg-black/5">
 
       <div class="container mx-auto px-4 text-center relative z-10">
         <div class="max-w-4xl mx-auto">
@@ -15,18 +10,18 @@
             :enter="{ opacity: 1, scale: 1, transition: { delay: 100 } }">
             <div class="avatar online mx-auto mb-6">
               <div class="w-24 rounded-full ring ring-white ring-offset-4 ring-offset-transparent">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="用户头像" />
+                <img :src="userStore.getUserAvatar" alt="用户头像" />
               </div>
             </div>
             <h1 class="text-4xl md:text-5xl font-bold mb-3">{{ userProfile.displayName }}</h1>
             <div class="flex items-center justify-center gap-3 text-lg">
-              <div class="badge badge-lg badge-outline border-white text-white">
+              <div class="badge badge-lg badge-outline border-blue-300 text-blue-700 bg-white/60">
                 <el-icon class="mr-2">
                   <Calendar />
                 </el-icon>
                 已加入 {{ userProfile.joinDays }} 天
               </div>
-              <div class="badge badge-lg badge-outline border-white text-white">
+              <div class="badge badge-lg badge-outline border-blue-300 text-blue-700 bg-white/60">
                 <el-icon class="mr-2">
                   <Trophy />
                 </el-icon>
@@ -299,7 +294,7 @@
             </h2>
 
             <div v-if="activeChallenge"
-              class="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg p-6">
+              class="from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg p-6">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
                   <div class="text-3xl">{{ activeChallenge.icon }}</div>
@@ -365,6 +360,9 @@ import {
   DataLine
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/auth/user'
+const userStore = useUserStore()
+
 
 // 用户资料接口
 interface UserProfile {
