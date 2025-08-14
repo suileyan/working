@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能垃圾分类系统</title>
+    <link rel="stylesheet" href="styles/user.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="logo">
+                <h1>🗂️ 智能垃圾分类</h1>
+            </div>
+            <nav class="nav">
+                <a href="#home" class="nav-link active">首页</a>
+                <a href="#detection" class="nav-link">智能检测</a>
+                <a href="#history" class="nav-link">历史记录</a>
+                <a href="#knowledge" class="nav-link">分类知识</a>
+                <a href="#statistics" class="nav-link">统计信息</a>
+            </nav>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 首页 - 基本信息展示 -->
+            <section id="home" class="section active">
+                <div class="welcome-banner">
+                    <h2>欢迎使用智能垃圾分类系统</h2>
+                    <p>基于深度学习技术，帮助您正确分类垃圾，保护环境</p>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-icon">🎯</div>
+                        <h3>识别准确率</h3>
+                        <p class="info-value">95.8%</p>
+                        <p class="info-desc">基于深度学习模型</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">📸</div>
+                        <h3>支持检测方式</h3>
+                        <p class="info-value">3种</p>
+                        <p class="info-desc">图片/视频/实时摄像头</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">🗑️</div>
+                        <h3>垃圾分类</h3>
+                        <p class="info-value">4大类</p>
+                        <p class="info-desc">可回收/厨余/有害/其他</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">👥</div>
+                        <h3>用户数量</h3>
+                        <p class="info-value">1,234+</p>
+                        <p class="info-desc">持续增长中</p>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>快速开始</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="switchToSection('detection')">
+                            <span class="btn-icon">📷</span>
+                            开始检测
+                        </button>
+                        <button class="action-btn" onclick="switchToSection('knowledge')">
+                            <span class="btn-icon">📚</span>
+                            学习分类
+                        </button>
+                        <button class="action-btn" onclick="switchToSection('history')">
+                            <span class="btn-icon">📊</span>
+                            查看记录
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 智能检测页面 -->
+            <section id="detection" class="section">
+                <div class="detection-tabs">
+                    <button class="tab-btn active" onclick="switchDetectionMode('image')">图片检测</button>
+                    <button class="tab-btn" onclick="switchDetectionMode('video')">视频检测</button>
+                    <button class="tab-btn" onclick="switchDetectionMode('camera')">实时摄像头</button>
+                </div>
+
+                <!-- 图片检测 -->
+                <div id="image-detection" class="detection-mode active">
+                    <div class="upload-area">
+                        <div class="upload-box" id="imageUploadBox">
+                            <div class="upload-icon">📷</div>
+                            <h3>上传图片进行检测</h3>
+                            <p>支持 JPG、PNG 格式，文件大小不超过 5MB</p>
+                            <input type="file" id="imageInput" accept="image/*">
+                            <button class="upload-btn" onclick="document.getElementById('imageInput').click()">选择图片</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 视频检测 -->
+                <div id="video-detection" class="detection-mode">
+                    <div class="upload-area">
+                        <div class="upload-box" id="videoUploadBox">
+                            <div class="upload-icon">🎥</div>
+                            <h3>上传视频进行检测</h3>
+                            <p>支持 MP4、AVI 格式，文件大小不超过 50MB</p>
+                            <input type="file" id="videoInput" accept="video/*">
+                            <button class="upload-btn" onclick="document.getElementById('videoInput').click()">选择视频</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实时摄像头检测 -->
+                <div id="camera-detection" class="detection-mode">
+                    <div class="camera-container">
+                        <div class="camera-view">
+                            <video id="cameraVideo" autoplay muted></video>
+                            <canvas id="cameraCanvas" style="display: none;"></canvas>
+                        </div>
+                        <div class="camera-controls">
+                            <button class="camera-btn" id="startCamera" onclick="startCamera()">📹 开启摄像头</button>
+                            <button class="camera-btn" id="captureBtn" onclick="captureFrame()" style="display: none;">📸 拍照检测</button>
+                            <button class="camera-btn" id="stopCamera" onclick="stopCamera()" style="display: none;">⏹️ 停止</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 检测结果区域 -->
+                <div class="result-area" id="detectionResult" style="display: none;">
+                    <div class="result-preview">
+                        <img id="resultImage" src="" alt="检测图片" style="display: none;">
+                        <video id="resultVideo" controls style="display: none;"></video>
+                    </div>
+                    <div class="result-info">
+                        <div class="loading" id="detectionLoading">
+                            <div class="spinner"></div>
+                            <p>AI正在分析中...</p>
+                        </div>
+                        <div class="result-content" id="detectionResultContent" style="display: none;">
+                            <h3>检测结果</h3>
+                            <div class="result-card">
+                                <div class="category-icon" id="resultCategoryIcon">🗑️</div>
+                                <div class="category-info">
+                                    <h4 id="resultCategoryName">垃圾类别</h4>
+                                    <p id="resultConfidence">置信度: 95%</p>
+                                    <p id="resultDescription">投放建议</p>
+                                </div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-primary" onclick="saveDetectionResult()">保存结果</button>
+                                <button class="btn-secondary" onclick="resetDetection()">重新检测</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 历史记录页面 -->
+            <section id="history" class="section">
+                <div class="history-header">
+                    <h2>检测历史记录</h2>
+                    <div class="history-controls">
+                        <select id="historyFilter">
+                            <option value="all">全部类型</option>
+                            <option value="recyclable">可回收垃圾</option>
+                            <option value="kitchen">厨余垃圾</option>
+                            <option value="hazardous">有害垃圾</option>
+                            <option value="other">其他垃圾</option>
+                        </select>
+                        <button class="btn-secondary" onclick="clearHistory()">清空记录</button>
+                    </div>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- 历史记录将通过JavaScript动态生成 -->
+                </div>
+            </section>
+
+            <!-- 分类知识页面 -->
+            <section id="knowledge" class="section">
+                <h2>垃圾分类宣传知识</h2>
+                
+                <div class="knowledge-tabs">
+                    <button class="knowledge-tab active" onclick="showKnowledgeTab('guide')">分类指南</button>
+                    <button class="knowledge-tab" onclick="showKnowledgeTab('tips')">环保小贴士</button>
+                    <button class="knowledge-tab" onclick="showKnowledgeTab('policy')">政策法规</button>
+                </div>
+
+                <!-- 分类指南 -->
+                <div id="guide-content" class="knowledge-content active">
+                    <div class="guide-grid">
+                        <div class="guide-card recyclable">
+                            <div class="guide-icon">♻️</div>
+                            <h3>可回收垃圾</h3>
+                            <p class="guide-desc">可以再生循环的垃圾</p>
+                            <ul class="guide-items">
+                                <li>塑料瓶、塑料袋</li>
+                                <li>纸张、纸箱</li>
+                                <li>金属罐、易拉罐</li>
+                                <li>玻璃瓶</li>
+                                <li>旧衣物、鞋子</li>
+                            </ul>
+                            <div class="guide-tip">💡 投放前请清洗干净</div>
+                        </div>
+                        
+                        <div class="guide-card kitchen">
+                            <div class="guide-icon">🥬</div>
+                            <h3>厨余垃圾</h3>
+                            <p class="guide-desc">易腐烂的生物质废料</p>
+                            <ul class="guide-items">
+                                <li>剩菜剩饭</li>
+                                <li>蔬菜水果皮</li>
+                                <li>肉骨头、鱼刺</li>
+                                <li>蛋壳、茶叶渣</li>
+                                <li>过期食品</li>
+                            </ul>
+                            <div class="guide-tip">💡 沥干水分后投放</div>
+                        </div>
+                        
+                        <div class="guide-card hazardous">
+                            <div class="guide-icon">☢️</div>
+                            <h3>有害垃圾</h3>
+                            <p class="guide-desc">对环境有害的垃圾</p>
+                            <ul class="guide-items">
+                                <li>废电池、充电宝</li>
+                                <li>废灯管、节能灯</li>
+                                <li>过期药品</li>
+                                <li>油漆、农药</li>
+                                <li>温度计、血压计</li>
+                            </ul>
+                            <div class="guide-tip">⚠️ 需要特殊处理</div>
+                        </div>
+                        
+                        <div class="guide-card other">
+                            <div class="guide-icon">🗑️</div>
+                            <h3>其他垃圾</h3>
+                            <p class="guide-desc">除上述之外的垃圾</p>
+                            <ul class="guide-items">
+                                <li>烟蒂、烟灰</li>
+                                <li>污染纸张</li>
+                                <li>破碎陶瓷</li>
+                                <li>猫砂、尿不湿</li>
+                                <li>一次性餐具</li>
+                            </ul>
+                            <div class="guide-tip">🗑️ 统一焚烧处理</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 环保小贴士 -->
+                <div id="tips-content" class="knowledge-content">
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4>🌱 减少使用一次性用品</h4>
+                            <p>使用可重复利用的购物袋、水杯等，减少塑料垃圾产生。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>📦 纸箱重复利用</h4>
+                            <p>快递纸箱可以重复使用，或者投放到可回收垃圾桶。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>🔋 电池回收</h4>
+                            <p>废旧电池含有重金属，必须投放到有害垃圾桶。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>🥤 饮料瓶处理</h4>
+                            <p>喝完饮料后，将瓶子清洗干净再投放到可回收垃圾桶。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 政策法规 -->
+                <div id="policy-content" class="knowledge-content">
+                    <div class="policy-list">
+                        <div class="policy-item">
+                            <h4>《生活垃圾分类管理条例》</h4>
+                            <p>规定了生活垃圾分类的基本要求和管理制度。</p>
+                            <span class="policy-date">2019年6月发布</span>
+                        </div>
+                        <div class="policy-item">
+                            <h4>《固体废物污染环境防治法》</h4>
+                            <p>明确了固体废物污染防治的责任和义务。</p>
+                            <span class="policy-date">2020年9月实施</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 统计信息页面 -->
+            <section id="statistics" class="section">
+                <h2>个人统计信息</h2>
+                
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-icon">📸</div>
+                        <div class="stat-info">
+                            <h3 id="totalDetections">0</h3>
+                            <p>总检测次数</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-info">
+                            <h3 id="accuracyRate">0%</h3>
+                            <p>平均准确率</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-info">
+                            <h3 id="userRank">-</h3>
+                            <p>用户排名</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🌱</div>
+                        <div class="stat-info">
+                            <h3 id="ecoPoints">0</h3>
+                            <p>环保积分</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>每日检测统计</h3>
+                        <canvas id="dailyStatsChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>分类准确率分布</h3>
+                        <canvas id="categoryStatsChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="achievement-section">
+                    <h3>成就徽章</h3>
+                    <div class="achievement-grid">
+                        <div class="achievement-item earned">
+                            <div class="achievement-icon">🥉</div>
+                            <p>初学者</p>
+                            <span>完成首次检测</span>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🥈</div>
+                            <p>熟练者</p>
+                            <span>检测100次</span>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🥇</div>
+                            <p>专家</p>
+                            <span>检测500次</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="scripts/user.js"></script>
+</body>
+</html>
