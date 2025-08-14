@@ -7,7 +7,10 @@ import type {
   RubbishItemListResponse,
   CreateRubbishItemRequest,
   DetectionRecordListResponse,
+    KnowledgeArticle,
   KnowledgeArticleListResponse,
+  CreateKnowledgeArticleRequest,
+  UpdateKnowledgeArticleRequest,
   StatisticsOverview
 } from '@/types/apis/hzsystem_rubbish_T'
 import serviceAxios from '@/http'
@@ -64,12 +67,65 @@ export function getDetectionRecordsAPI(params?: { user?: number; type?: string }
   })
 }
 
-// 1.5 获取知识文章列表
+// 1.5.1 获取知识文章列表
 export function getKnowledgeArticlesAPI(params?: { type?: string }): Promise<KnowledgeArticleListResponse> {
   return serviceAxios({
     url: '/api/rubbish/api/knowledge/',
     method: 'get',
     params
+  })
+}
+
+// 1.5.2 创建知识文章
+export function createKnowledgeArticleAPI(data: CreateKnowledgeArticleRequest | FormData): Promise<KnowledgeArticle> {
+  const isFormData = data instanceof FormData;
+  return serviceAxios({
+    url: '/api/rubbish/api/knowledge/',
+    method: 'post',
+    data,
+    headers: isFormData ? {
+      'Content-Type': 'multipart/form-data'
+    } : {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
+// 1.5.3 更新知识文章（全量更新）
+export function updateKnowledgeArticleAPI(id: number, data: UpdateKnowledgeArticleRequest | FormData): Promise<KnowledgeArticle> {
+  const isFormData = data instanceof FormData;
+  return serviceAxios({
+    url: `/api/rubbish/api/knowledge/${id}/`,
+    method: 'put',
+    data,
+    headers: isFormData ? {
+      'Content-Type': 'multipart/form-data'
+    } : {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
+// 1.5.3 部分更新知识文章
+export function patchKnowledgeArticleAPI(id: number, data: Partial<UpdateKnowledgeArticleRequest> | FormData): Promise<KnowledgeArticle> {
+  const isFormData = data instanceof FormData;
+  return serviceAxios({
+    url: `/api/rubbish/api/knowledge/${id}/`,
+    method: 'patch',
+    data,
+    headers: isFormData ? {
+      'Content-Type': 'multipart/form-data'
+    } : {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
+// 1.5.4 删除知识文章
+export function deleteKnowledgeArticleAPI(id: number): Promise<void> {
+  return serviceAxios({
+    url: `/api/rubbish/api/knowledge/${id}/`,
+    method: 'delete'
   })
 }
 

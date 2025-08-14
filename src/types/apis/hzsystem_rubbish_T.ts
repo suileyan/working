@@ -116,6 +116,26 @@ export interface KnowledgeArticle {
 
 export type KnowledgeArticleListResponse = KnowledgeArticle[];
 
+export interface CreateKnowledgeArticleRequest {
+  title: string;
+  article_type: string;
+  content: string;
+  summary: string;
+  cover_image?: string;
+  is_published: boolean;
+  sort_order: number;
+}
+
+export interface UpdateKnowledgeArticleRequest {
+  title: string;
+  article_type: string;
+  content: string;
+  summary: string;
+  cover_image?: string;
+  is_published: boolean;
+  sort_order: number;
+}
+
 export interface StatisticsOverview {
   total_detections: number;
   total_users: number;
