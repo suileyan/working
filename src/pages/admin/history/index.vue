@@ -7,9 +7,9 @@
     // 统计概览数据
     const statisticsOverview = ref<StatisticsOverview>();
     
-    // 检测历史数据（计算属性）
+    // 检测历史数据（计算属性）- 基于检测记录详情数据
     const historyData = computed(() => {
-      if (!statisticsOverview.value) {
+      if (!detectionRecords.value.length) {
         return {
           todayDetection: {
             value: 0,
@@ -29,32 +29,49 @@
           errorDetection: {
             value: 0,
             change: "0%",
-            label: "分类统计",
+            label: "正确检测数",
           },
         };
       }
       
-      const stats = statisticsOverview.value;
+      const records = detectionRecords.value;
+      
+      // 计算总检测数
+      const totalDetections = records.length;
+      
+      // 计算总用户数（去重）
+      const uniqueUsers = new Set(records.map(record => record.user));
+      const totalUsers = uniqueUsers.size;
+      
+      // 计算准确率（基于置信度平均值）
+      const avgConfidence = records.length > 0 
+        ? records.reduce((sum, record) => sum + record.confidence, 0) / records.length
+        : 0;
+      const accuracyRate = Math.round(avgConfidence * 1000) / 10; // 保留一位小数
+      
+      // 计算正确检测数
+      const correctDetections = records.filter(record => record.is_correct).length;
+      
       return {
         todayDetection: {
-          value: stats.total_detections,
+          value: totalDetections,
           change: "+0%",
           label: "总检测数",
         },
         weekDetection: {
-          value: stats.total_users,
+          value: totalUsers,
           change: "+0%",
           label: "总用户数",
         },
         monthDetection: {
-          value: Math.round(stats.accuracy_rate * 10) / 10,
+          value: accuracyRate,
           change: "+0%",
           label: "准确率(%)",
         },
         errorDetection: {
-          value: stats.category_distribution.length,
+          value: correctDetections,
           change: "+0%",
-          label: "分类数量",
+          label: "正确检测数",
         },
       };
     });
