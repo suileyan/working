@@ -5,6 +5,8 @@ import ElementPlus from 'element-plus'
 import { createApp } from 'vue'
 // 导入Motion动画库
 import { motion, AnimatePresence } from 'motion-v'
+// 导入vue-echarts
+import VChart from 'vue-echarts'
 
 // 导入i18n配置
 import i18n, { setupI18n } from '@/i18n'
@@ -48,6 +50,9 @@ app.use(i18n)
 
 // 使用Element Plus
 app.use(ElementPlus)
+
+// 全局注册VChart组件
+app.component('VChart', VChart)
 
 // 注册Element Plus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

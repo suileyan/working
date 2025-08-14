@@ -1,5 +1,168 @@
 <script setup lang="ts">
-import { Motion } from 'motion-v'
+import { Motion } from "motion-v";
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { LineChart, BarChart, PieChart, GaugeChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from "echarts/components";
+import VChart from "vue-echarts";
+import type { EChartsOption } from "echarts";
+
+use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  PieChart,
+  GaugeChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+]);
+
+// 仪表板数据
+const dashboardData = {
+  totalUsers: {
+    value: 1421,
+    change: "+5.2%",
+    label: "总用户数",
+  },
+  totalDetections: {
+    value: 5859,
+    change: "+12.8%",
+    label: "总检测次数",
+  },
+  averageAccuracy: {
+    value: "94.0%",
+    change: "+0.3%",
+    label: "平均准确率",
+  },
+  averageResponseTime: {
+    value: "+8%",
+    change: "-0.1s",
+    label: "平均响应时间",
+  },
+};
+// 图表数据
+const userGrowthData: EChartsOption = {
+  title: {
+    text: "用户增长趋势",
+    left: "center",
+  },
+  tooltip: {
+    trigger: "axis",
+  },
+  xAxis: {
+    type: "category",
+    data: ["1月", "2月", "3月", "4月", "5月", "6月"],
+  },
+  yAxis: {
+    type: "value",
+  },
+  series: [
+    {
+      data: [120, 200, 150, 280, 350, 420],
+      type: "line",
+      smooth: true,
+      itemStyle: {
+        color: "#3b82f6",
+      },
+    },
+  ],
+};
+
+const detectionStatsData: EChartsOption = {
+  title: {
+    text: "检测量统计",
+    left: "center",
+  },
+  tooltip: {
+    trigger: "axis",
+  },
+  xAxis: {
+    type: "category",
+    data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+  },
+  yAxis: {
+    type: "value",
+  },
+  series: [
+    {
+      data: [820, 932, 901, 934, 1290, 1330, 1320],
+      type: "bar",
+      itemStyle: {
+        color: "#10b981",
+      },
+    },
+  ],
+};
+
+const wasteDistributionData: EChartsOption = {
+  title: {
+    text: "垃圾分类分布",
+    left: "center",
+  },
+  tooltip: {
+    trigger: "item",
+  },
+  legend: {
+    orient: "vertical",
+    left: "left",
+  },
+  series: [
+    {
+      name: "垃圾类型",
+      type: "pie",
+      radius: "50%",
+      data: [
+        { value: 1048, name: "可回收垃圾" },
+        { value: 735, name: "有害垃圾" },
+        { value: 580, name: "湿垃圾" },
+        { value: 484, name: "干垃圾" },
+      ],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: "rgba(0, 0, 0, 0.5)",
+        },
+      },
+    },
+  ],
+};
+
+const modelPerformanceData: EChartsOption = {
+  title: {
+    text: "模型性能监控",
+    left: "center",
+  },
+  tooltip: {
+    formatter: "{a} <br/>{b} : {c}%",
+  },
+  series: [
+    {
+      name: "准确率",
+      type: "gauge",
+      detail: {
+        formatter: "{value}%",
+      },
+      data: [{ value: 94, name: "准确率" }],
+      axisLine: {
+        lineStyle: {
+          color: [
+            [0.3, "#ff4757"],
+            [0.7, "#ffa502"],
+            [1, "#2ed573"],
+          ],
+        },
+      },
+    },
+  ],
+};
 
 // 动画配置
 const cardVariants = {
@@ -8,10 +171,10 @@ const cardVariants = {
   whileHover: {
     scale: 1.02,
     y: -5,
-    transition: { duration: 0.2, ease: ['easeOut'] }
+    transition: { duration: 0.2, ease: ["easeOut"] },
   },
-  transition: { duration: 0.4, ease: ['easeOut'] }
-}
+  transition: { duration: 0.4, ease: ["easeOut"] },
+};
 
 const statsCardVariants = {
   initial: { opacity: 0, y: 40, scale: 0.9 },
@@ -19,10 +182,10 @@ const statsCardVariants = {
   whileHover: {
     scale: 1.05,
     y: -8,
-    transition: { duration: 0.3, ease: ['easeOut'] }
+    transition: { duration: 0.3, ease: ["easeOut"] },
   },
-  transition: { duration: 0.5, ease: ['easeOut'] }
-}
+  transition: { duration: 0.5, ease: ["easeOut"] },
+};
 
 const iconVariants = {
   initial: { scale: 0, rotate: -180 },
@@ -30,23 +193,31 @@ const iconVariants = {
   whileHover: {
     scale: 1.2,
     rotate: 10,
-    transition: { duration: 0.2, ease: ['easeOut'] }
+    transition: { duration: 0.2, ease: ["easeOut"] },
   },
-  transition: { duration: 0.6, delay: 0.3, ease: ['easeOut'] }
-}
+  transition: { duration: 0.6, delay: 0.3, ease: ["easeOut"] },
+};
 </script>
 
 <template>
   <div class="dashboard">
     <!-- 仪表板页面 -->
-    <Motion :initial="cardVariants.initial" :animate="cardVariants.animate" :whileHover="cardVariants.whileHover as any"
-      :transition="{ ...cardVariants.transition, delay: 0.3 } as any">
+    <Motion
+      :initial="cardVariants.initial"
+      :animate="cardVariants.animate"
+      :whileHover="cardVariants.whileHover as any"
+      :transition="{ ...cardVariants.transition, delay: 0.3 } as any"
+    >
       <el-card class="mb-6">
         <template #header>
           <div class="flex items-center justify-between">
             <span class="text-lg font-medium">仪表板</span>
-            <Motion :initial="{ scale: 0.8, opacity: 0 }" :animate="{ scale: 1, opacity: 1 }"
-              :whileHover="{ scale: 1.05 }" :transition="{ duration: 0.3, delay: 0.5 }">
+            <Motion
+              :initial="{ scale: 0.8, opacity: 0 }"
+              :animate="{ scale: 1, opacity: 1 }"
+              :whileHover="{ scale: 1.05 }"
+              :transition="{ duration: 0.3, delay: 0.5 }"
+            >
               <el-button type="primary" size="small">刷新数据</el-button>
             </Motion>
           </div>
@@ -54,22 +225,38 @@ const iconVariants = {
 
         <!-- 统计卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-
-          <Motion :initial="statsCardVariants.initial" :animate="statsCardVariants.animate"
+          <Motion
+            :initial="statsCardVariants.initial"
+            :animate="statsCardVariants.animate"
             :whileHover="statsCardVariants.whileHover as any"
             :transition="{ ...statsCardVariants.transition, delay: 0.4 } as any"
-            class="bg-blue-50 p-6 rounded-lg cursor-pointer">
+            class="bg-blue-50 p-6 rounded-lg cursor-pointer"
+          >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-blue-600 text-sm font-medium">总用户数</p>
-                <Motion :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
-                  :transition="{ duration: 0.4, delay: 0.6 }">
-                  <p class="text-2xl font-bold text-blue-900">1,234</p>
+                <p class="text-blue-600 text-sm font-medium">
+                  {{ dashboardData.totalUsers.label }}
+                </p>
+                <Motion
+                  :initial="{ opacity: 0, y: 10 }"
+                  :animate="{ opacity: 1, y: 0 }"
+                  :transition="{ duration: 0.4, delay: 0.6 }"
+                >
+                  <p class="text-2xl font-bold text-blue-900">
+                    {{ dashboardData.totalUsers.value.toLocaleString() }}
+                  </p>
+                  <p class="text-sm text-blue-600 mt-1">
+                    {{ dashboardData.totalUsers.change }}
+                  </p>
                 </Motion>
               </div>
-              <Motion :initial="iconVariants.initial" :animate="iconVariants.animate"
+              <Motion
+                :initial="iconVariants.initial"
+                :animate="iconVariants.animate"
                 :whileHover="iconVariants.whileHover as any"
-                :transition="{ ...iconVariants.transition, delay: 0.5 } as any" class="text-blue-500">
+                :transition="{ ...iconVariants.transition, delay: 0.5 } as any"
+                class="text-blue-500"
+              >
                 <el-icon size="32">
                   <User />
                 </el-icon>
@@ -77,21 +264,38 @@ const iconVariants = {
             </div>
           </Motion>
 
-          <Motion :initial="statsCardVariants.initial" :animate="statsCardVariants.animate"
+          <Motion
+            :initial="statsCardVariants.initial"
+            :animate="statsCardVariants.animate"
             :whileHover="statsCardVariants.whileHover as any"
             :transition="{ ...statsCardVariants.transition, delay: 0.5 } as any"
-            class="bg-green-50 p-6 rounded-lg cursor-pointer">
+            class="bg-green-50 p-6 rounded-lg cursor-pointer"
+          >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-green-600 text-sm font-medium">今日订单</p>
-                <Motion :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
-                  :transition="{ duration: 0.4, delay: 0.7 }">
-                  <p class="text-2xl font-bold text-green-900">567</p>
+                <p class="text-green-600 text-sm font-medium">
+                  {{ dashboardData.totalDetections.label }}
+                </p>
+                <Motion
+                  :initial="{ opacity: 0, y: 10 }"
+                  :animate="{ opacity: 1, y: 0 }"
+                  :transition="{ duration: 0.4, delay: 0.7 }"
+                >
+                  <p class="text-2xl font-bold text-green-900">
+                    {{ dashboardData.totalDetections.value.toLocaleString() }}
+                  </p>
+                  <p class="text-sm text-green-600 mt-1">
+                    {{ dashboardData.totalDetections.change }}
+                  </p>
                 </Motion>
               </div>
-              <Motion :initial="iconVariants.initial" :animate="iconVariants.animate"
+              <Motion
+                :initial="iconVariants.initial"
+                :animate="iconVariants.animate"
                 :whileHover="iconVariants.whileHover as any"
-                :transition="{ ...iconVariants.transition, delay: 0.6 } as any" class="text-green-500">
+                :transition="{ ...iconVariants.transition, delay: 0.6 } as any"
+                class="text-green-500"
+              >
                 <el-icon size="32">
                   <ShoppingCart />
                 </el-icon>
@@ -99,21 +303,38 @@ const iconVariants = {
             </div>
           </Motion>
 
-          <Motion :initial="statsCardVariants.initial" :animate="statsCardVariants.animate"
+          <Motion
+            :initial="statsCardVariants.initial"
+            :animate="statsCardVariants.animate"
             :whileHover="statsCardVariants.whileHover as any"
             :transition="{ ...statsCardVariants.transition, delay: 0.6 } as any"
-            class="bg-yellow-50 p-6 rounded-lg cursor-pointer">
+            class="bg-yellow-50 p-6 rounded-lg cursor-pointer"
+          >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-yellow-600 text-sm font-medium">总收入</p>
-                <Motion :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
-                  :transition="{ duration: 0.4, delay: 0.8 }">
-                  <p class="text-2xl font-bold text-yellow-900">¥89,012</p>
+                <p class="text-yellow-600 text-sm font-medium">
+                  {{ dashboardData.averageAccuracy.label }}
+                </p>
+                <Motion
+                  :initial="{ opacity: 0, y: 10 }"
+                  :animate="{ opacity: 1, y: 0 }"
+                  :transition="{ duration: 0.4, delay: 0.8 }"
+                >
+                  <p class="text-2xl font-bold text-yellow-900">
+                    {{ dashboardData.averageAccuracy.value }}
+                  </p>
+                  <p class="text-sm text-yellow-600 mt-1">
+                    {{ dashboardData.averageAccuracy.change }}
+                  </p>
                 </Motion>
               </div>
-              <Motion :initial="iconVariants.initial" :animate="iconVariants.animate"
+              <Motion
+                :initial="iconVariants.initial"
+                :animate="iconVariants.animate"
                 :whileHover="iconVariants.whileHover as any"
-                :transition="{ ...iconVariants.transition, delay: 0.7 } as any" class="text-yellow-500">
+                :transition="{ ...iconVariants.transition, delay: 0.7 } as any"
+                class="text-yellow-500"
+              >
                 <el-icon size="32">
                   <Money />
                 </el-icon>
@@ -121,75 +342,141 @@ const iconVariants = {
             </div>
           </Motion>
 
-          <Motion :initial="statsCardVariants.initial" :animate="statsCardVariants.animate"
+          <Motion
+            :initial="statsCardVariants.initial"
+            :animate="statsCardVariants.animate"
             :whileHover="statsCardVariants.whileHover as any"
             :transition="{ ...statsCardVariants.transition, delay: 0.7 } as any"
-            class="bg-purple-50 p-6 rounded-lg cursor-pointer">
+            class="bg-purple-50 p-6 rounded-lg cursor-pointer"
+          >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-purple-600 text-sm font-medium">活跃用户</p>
-                <Motion :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
-                  :transition="{ duration: 0.4, delay: 0.9 }">
-                  <p class="text-2xl font-bold text-purple-900">345</p>
+                <p class="text-purple-600 text-sm font-medium">
+                  {{ dashboardData.averageResponseTime.label }}
+                </p>
+                <Motion
+                  :initial="{ opacity: 0, y: 10 }"
+                  :animate="{ opacity: 1, y: 0 }"
+                  :transition="{ duration: 0.4, delay: 0.9 }"
+                >
+                  <p class="text-2xl font-bold text-purple-900">
+                    {{ dashboardData.averageResponseTime.value }}
+                  </p>
+                  <p class="text-sm text-purple-600 mt-1">
+                    {{ dashboardData.averageResponseTime.change }}
+                  </p>
                 </Motion>
               </div>
-              <Motion :initial="iconVariants.initial" :animate="iconVariants.animate"
+              <Motion
+                :initial="iconVariants.initial"
+                :animate="iconVariants.animate"
                 :whileHover="iconVariants.whileHover as any"
-                :transition="{ ...iconVariants.transition, delay: 0.8 } as any" class="text-purple-500">
+                :transition="{ ...iconVariants.transition, delay: 0.8 } as any"
+                class="text-purple-500"
+              >
                 <el-icon size="32">
                   <TrendCharts />
                 </el-icon>
               </Motion>
             </div>
           </Motion>
-
         </div>
       </el-card>
     </Motion>
 
     <!-- 图表区域 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Motion :initial="cardVariants.initial" :animate="cardVariants.animate"
-        :whileHover="cardVariants.whileHover as any" :transition="{ ...cardVariants.transition, delay: 0.8 } as any">
+      <!-- 用户增长趋势 -->
+      <Motion
+        :initial="cardVariants.initial"
+        :animate="cardVariants.animate"
+        :whileHover="cardVariants.whileHover as any"
+        :transition="{ ...cardVariants.transition, delay: 0.8 } as any"
+      >
         <el-card>
           <template #header>
-            <span class="font-medium">销售趋势</span>
+            <span class="font-medium">用户增长趋势</span>
           </template>
-          <div class="h-64 flex items-center justify-center text-gray-500">
-            <Motion :initial="{ opacity: 0, scale: 0.8 }" :animate="{ opacity: 1, scale: 1 }"
-              :whileHover="{ scale: 1.1, rotate: 5 }" :transition="{ duration: 0.5, delay: 1.0 }" class="text-center">
-              <Motion :initial="{ y: -20, opacity: 0 }" :animate="{ y: 0, opacity: 1 }"
-                :transition="{ duration: 0.4, delay: 1.2 }">
-                <el-icon size="48" class="mb-2">
-                  <TrendCharts />
-                </el-icon>
-              </Motion>
-              <Motion :initial="{ opacity: 0 }" :animate="{ opacity: 1 }" :transition="{ duration: 0.3, delay: 1.4 }">
-                <p>图表组件待集成</p>
-              </Motion>
+          <div class="h-64">
+            <Motion
+              class="h-full"
+              :initial="{ opacity: 0, scale: 0.8 }"
+              :animate="{ opacity: 1, scale: 1 }"
+              :transition="{ duration: 0.5, delay: 1.0 }"
+            >
+              <v-chart :option="userGrowthData" class="w-full h-full" autoresize />
             </Motion>
           </div>
         </el-card>
       </Motion>
 
-      <Motion :initial="cardVariants.initial" :animate="cardVariants.animate"
-        :whileHover="cardVariants.whileHover as any" :transition="{ ...cardVariants.transition, delay: 0.9 } as any">
+      <!-- 检测量统计 -->
+      <Motion
+        :initial="cardVariants.initial"
+        :animate="cardVariants.animate"
+        :whileHover="cardVariants.whileHover as any"
+        :transition="{ ...cardVariants.transition, delay: 0.9 } as any"
+      >
         <el-card>
           <template #header>
-            <span class="font-medium">用户分布</span>
+            <span class="font-medium">检测量统计</span>
           </template>
-          <div class="h-64 flex items-center justify-center text-gray-500">
-            <Motion :initial="{ opacity: 0, scale: 0.8 }" :animate="{ opacity: 1, scale: 1 }"
-              :whileHover="{ scale: 1.1, rotate: -5 }" :transition="{ duration: 0.5, delay: 1.1 }" class="text-center">
-              <Motion :initial="{ y: -20, opacity: 0 }" :animate="{ y: 0, opacity: 1 }"
-                :transition="{ duration: 0.4, delay: 1.3 }">
-                <el-icon size="48" class="mb-2">
-                  <PieChart />
-                </el-icon>
-              </Motion>
-              <Motion :initial="{ opacity: 0 }" :animate="{ opacity: 1 }" :transition="{ duration: 0.3, delay: 1.5 }">
-                <p>图表组件待集成</p>
-              </Motion>
+          <div class="h-64">
+            <Motion
+              class="h-full"
+              :initial="{ opacity: 0, scale: 0.8 }"
+              :animate="{ opacity: 1, scale: 1 }"
+              :transition="{ duration: 0.5, delay: 1.1 }"
+            >
+              <v-chart :option="detectionStatsData" class="w-full h-full" autoresize />
+            </Motion>
+          </div>
+        </el-card>
+      </Motion>
+
+      <!-- 垃圾分类分布 -->
+      <Motion
+        :initial="cardVariants.initial"
+        :animate="cardVariants.animate"
+        :whileHover="cardVariants.whileHover as any"
+        :transition="{ ...cardVariants.transition, delay: 1.0 } as any"
+      >
+        <el-card>
+          <template #header>
+            <span class="font-medium">垃圾分类分布</span>
+          </template>
+          <div class="h-64">
+            <Motion
+              class="h-full"
+              :initial="{ opacity: 0, scale: 0.8 }"
+              :animate="{ opacity: 1, scale: 1 }"
+              :transition="{ duration: 0.5, delay: 1.2 }"
+            >
+              <v-chart :option="wasteDistributionData" class="w-full h-full" autoresize />
+            </Motion>
+          </div>
+        </el-card>
+      </Motion>
+
+      <!-- 模型性能监控 -->
+      <Motion
+        :initial="cardVariants.initial"
+        :animate="cardVariants.animate"
+        :whileHover="cardVariants.whileHover as any"
+        :transition="{ ...cardVariants.transition, delay: 1.1 } as any"
+      >
+        <el-card>
+          <template #header>
+            <span class="font-medium">模型性能监控</span>
+          </template>
+          <div class="h-64">
+            <Motion
+              class="h-full"
+              :initial="{ opacity: 0, scale: 0.8 }"
+              :animate="{ opacity: 1, scale: 1 }"
+              :transition="{ duration: 0.5, delay: 1.3 }"
+            >
+              <v-chart :option="modelPerformanceData" class="w-full h-full" autoresize />
             </Motion>
           </div>
         </el-card>
