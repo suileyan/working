@@ -3,20 +3,12 @@
     <!-- 页面标题 -->
     <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
       <div class="container mx-auto px-4 text-center">
-        <h1 
-          class="text-5xl font-bold mb-4"
-          v-motion
-          :initial="{ opacity: 0, y: 50 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }"
-        >
+        <h1 class="text-5xl font-bold mb-4" v-motion :initial="{ opacity: 0, y: 50 }"
+          :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }">
           检测历史
         </h1>
-        <p 
-          class="text-xl opacity-90 max-w-2xl mx-auto"
-          v-motion
-          :initial="{ opacity: 0, y: 30 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 200 } }"
-        >
+        <p class="text-xl opacity-90 max-w-2xl mx-auto" v-motion :initial="{ opacity: 0, y: 30 }"
+          :enter="{ opacity: 1, y: 0, transition: { delay: 200 } }">
           查看您的垃圾分类检测记录和统计数据
         </p>
       </div>
@@ -25,17 +17,13 @@
     <div class="container mx-auto px-4 py-12">
       <!-- 统计概览 -->
       <div class="grid md:grid-cols-4 gap-6 mb-12">
-        <div 
-          v-for="(stat, index) in historyStats" 
-          :key="stat.label"
-          class="card bg-base-100 shadow-xl"
-          v-motion
-          :initial="{ opacity: 0, y: 50 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 200 + index * 100 } }"
-        >
+        <div v-for="(stat, index) in historyStats" :key="stat.label" class="card bg-base-100 shadow-xl" v-motion
+          :initial="{ opacity: 0, y: 50 }" :enter="{ opacity: 1, y: 0, transition: { delay: 200 + index * 100 } }">
           <div class="card-body text-center">
             <div class="text-4xl mb-2">
-              <el-icon :class="stat.color"><component :is="stat.iconComponent" /></el-icon>
+              <el-icon :class="stat.color">
+                <component :is="stat.iconComponent" />
+              </el-icon>
             </div>
             <div class="text-3xl font-bold" :class="stat.color">{{ stat.value }}</div>
             <div class="text-sm text-base-content/70">{{ stat.label }}</div>
@@ -44,29 +32,22 @@
       </div>
 
       <!-- 筛选和搜索 -->
-      <div 
-        class="card bg-base-100 shadow-xl mb-8"
-        v-motion
-        :initial="{ opacity: 0, y: 30 }"
-        :enter="{ opacity: 1, y: 0, transition: { delay: 600 } }"
-      >
+      <div class="card bg-base-100 shadow-xl mb-8" v-motion :initial="{ opacity: 0, y: 30 }"
+        :enter="{ opacity: 1, y: 0, transition: { delay: 600 } }">
         <div class="card-body">
           <div class="flex flex-col md:flex-row gap-4 items-center">
             <!-- 搜索框 -->
             <div class="form-control flex-1">
               <div class="input-group">
-                <input 
-                  v-model="searchQuery" 
-                  type="text" 
-                  placeholder="搜索检测记录..." 
-                  class="input input-bordered flex-1"
-                >
+                <input v-model="searchQuery" type="text" placeholder="搜索检测记录..." class="input input-bordered flex-1">
                 <button class="btn btn-square">
-                  <el-icon class="text-primary"><Search /></el-icon>
+                  <el-icon class="text-primary">
+                    <Search />
+                  </el-icon>
                 </button>
               </div>
             </div>
-            
+
             <!-- 分类筛选 -->
             <div class="form-control">
               <select v-model="selectedCategory" class="select select-bordered">
@@ -77,7 +58,7 @@
                 <option value="其他垃圾">其他垃圾</option>
               </select>
             </div>
-            
+
             <!-- 时间筛选 -->
             <div class="form-control">
               <select v-model="selectedTimeRange" class="select select-bordered">
@@ -87,11 +68,13 @@
                 <option value="month">本月</option>
               </select>
             </div>
-            
+
             <!-- 清空历史 -->
             <button @click="clearHistory" class="btn btn-outline btn-error">
-              <el-icon class="text-error"><Delete /></el-icon>
-        清空历史
+              <el-icon class="text-error">
+                <Delete />
+              </el-icon>
+              清空历史
             </button>
           </div>
         </div>
@@ -99,20 +82,17 @@
 
       <!-- 历史记录列表 -->
       <div v-if="filteredHistory.length > 0" class="space-y-4">
-        <div 
-          v-for="(record, index) in paginatedHistory" 
-          :key="record.id"
-          class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300"
-          v-motion
-          :initial="{ opacity: 0, x: -50 }"
-          :enter="{ opacity: 1, x: 0, transition: { delay: index * 50 } }"
-        >
+        <div v-for="(record, index) in paginatedHistory" :key="record.id"
+          class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300" v-motion
+          :initial="{ opacity: 0, x: -50 }" :enter="{ opacity: 1, x: 0, transition: { delay: index * 50 } }">
           <div class="card-body">
             <div class="flex items-center justify-between">
               <!-- 检测结果信息 -->
               <div class="flex items-center gap-4">
                 <div class="text-4xl">
-                  <el-icon :class="record.color"><component :is="record.icon" /></el-icon>
+                  <el-icon :class="record.color">
+                    <component :is="record.icon" />
+                  </el-icon>
                 </div>
                 <div>
                   <h3 class="text-xl font-bold" :class="record.color">{{ record.category }}</h3>
@@ -120,22 +100,27 @@
                   <p class="text-xs text-base-content/50">{{ formatTime(record.timestamp) }}</p>
                 </div>
               </div>
-              
+
               <!-- 操作按钮 -->
               <div class="flex items-center gap-2">
                 <button @click="viewDetails(record)" class="btn btn-ghost btn-sm" title="查看详情">
-                  <el-icon class="text-info"><View /></el-icon>
+                  <el-icon class="text-info">
+                    <View />
+                  </el-icon>
                 </button>
                 <button @click="shareRecord(record)" class="btn btn-ghost btn-sm" title="分享">📤</button>
                 <button @click="deleteRecord(record.id)" class="btn btn-ghost btn-sm text-error" title="删除">
-                  <el-icon class="text-error"><Delete /></el-icon>
+                  <el-icon class="text-error">
+                    <Delete />
+                  </el-icon>
                 </button>
               </div>
             </div>
-            
+
             <!-- 检测提示预览 -->
             <div v-if="record.tips && record.tips.length > 0" class="mt-4 p-3 bg-base-200 rounded-lg">
-              <p class="text-sm text-base-content/80">💡 {{ record.tips[0] }}<span v-if="record.tips.length > 1" class="text-base-content/60">等 {{ record.tips.length }} 条提示</span></p>
+              <p class="text-sm text-base-content/80">💡 {{ record.tips[0] }}<span v-if="record.tips.length > 1"
+                  class="text-base-content/60">等 {{ record.tips.length }} 条提示</span></p>
             </div>
           </div>
         </div>
@@ -143,12 +128,8 @@
 
       <!-- 空状态 -->
       <div v-else class="text-center py-20">
-        <div 
-          class="space-y-4"
-          v-motion
-          :initial="{ opacity: 0, y: 50 }"
-          :enter="{ opacity: 1, y: 0, transition: { delay: 300 } }"
-        >
+        <div class="space-y-4" v-motion :initial="{ opacity: 0, y: 50 }"
+          :enter="{ opacity: 1, y: 0, transition: { delay: 300 } }">
           <div class="text-8xl text-base-content/30">📋</div>
           <h3 class="text-2xl font-bold text-base-content/70">暂无检测记录</h3>
           <p class="text-base-content/50">开始您的第一次垃圾分类检测吧！</p>
@@ -161,28 +142,16 @@
       <!-- 分页 -->
       <div v-if="totalPages > 1" class="flex justify-center mt-12">
         <div class="btn-group">
-          <button 
-            @click="currentPage--" 
-            :disabled="currentPage === 1"
-            class="btn"
-          >
+          <button @click="currentPage--" :disabled="currentPage === 1" class="btn">
             «
           </button>
-          
-          <button 
-            v-for="page in visiblePages" 
-            :key="page"
-            @click="currentPage = page"
-            :class="['btn', { 'btn-active': page === currentPage }]"
-          >
+
+          <button v-for="page in visiblePages" :key="page" @click="currentPage = page"
+            :class="['btn', { 'btn-active': page === currentPage }]">
             {{ page }}
           </button>
-          
-          <button 
-            @click="currentPage++" 
-            :disabled="currentPage === totalPages"
-            class="btn"
-          >
+
+          <button @click="currentPage++" :disabled="currentPage === totalPages" class="btn">
             »
           </button>
         </div>
@@ -193,7 +162,7 @@
     <div v-if="selectedRecord" class="modal modal-open">
       <div class="modal-box max-w-2xl">
         <h3 class="font-bold text-lg mb-4">检测详情</h3>
-        
+
         <div class="space-y-4">
           <!-- 基本信息 -->
           <div class="flex items-center gap-4">
@@ -204,7 +173,7 @@
               <p class="text-sm text-base-content/50">{{ formatTime(selectedRecord.timestamp) }}</p>
             </div>
           </div>
-          
+
           <!-- 投放提示 -->
           <div v-if="selectedRecord.tips" class="bg-base-200 rounded-lg p-4">
             <h5 class="font-semibold mb-2">💡 投放提示</h5>
@@ -215,7 +184,7 @@
             </ul>
           </div>
         </div>
-        
+
         <div class="modal-action">
           <button @click="selectedRecord = null" class="btn">关闭</button>
         </div>
@@ -256,22 +225,22 @@ const generateMockHistory = (): HistoryRecord[] => {
     { name: '有害垃圾', icon: Warning, color: 'text-red-600' },
     { name: '其他垃圾', icon: DeleteFilled, color: 'text-gray-600' }
   ]
-  
+
   const tips = {
     '可回收垃圾': ['请清洗干净后投放', '塑料瓶请压扁节省空间', '纸张请保持干燥'],
     '厨余垃圾': ['请沥干水分后投放', '大骨头属于其他垃圾', '包装袋请取出'],
     '有害垃圾': ['请投放到专门的有害垃圾桶', '电池请用胶带包裹电极', '过期药品请保持原包装'],
     '其他垃圾': ['请投放到其他垃圾桶', '尽量压缩体积', '避免液体渗漏']
   }
-  
+
   const records: HistoryRecord[] = []
-  
+
   for (let i = 0; i < 25; i++) {
     const category = categories[Math.floor(Math.random() * categories.length)]
     const confidence = Math.floor(Math.random() * 20 + 80) // 80-100%
     const daysAgo = Math.floor(Math.random() * 30) // 最近30天
     const timestamp = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
-    
+
     records.push({
       id: Date.now() + i,
       category: category.name,
@@ -282,24 +251,24 @@ const generateMockHistory = (): HistoryRecord[] => {
       tips: tips[category.name]
     })
   }
-  
+
   return records.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 }
 
 // 计算属性
 const historyStats = computed(() => {
   const total = historyRecords.value.length
-  const avgConfidence = total > 0 
+  const avgConfidence = total > 0
     ? Math.round(historyRecords.value.reduce((sum, record) => sum + record.confidence, 0) / total)
     : 0
-  
+
   const categoryCount = historyRecords.value.reduce((acc, record) => {
     acc[record.category] = (acc[record.category] || 0) + 1
     return acc
   }, {} as Record<string, number>)
-  
-  const mostFrequent = Object.entries(categoryCount).sort(([,a], [,b]) => b - a)[0]
-  
+
+  const mostFrequent = Object.entries(categoryCount).sort(([, a], [, b]) => b - a)[0]
+
   return [
     {
       iconComponent: TrendCharts,
@@ -330,28 +299,28 @@ const historyStats = computed(() => {
 
 const filteredHistory = computed(() => {
   let filtered = historyRecords.value
-  
+
   // 搜索筛选
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(record => 
+    filtered = filtered.filter(record =>
       record.category.toLowerCase().includes(query)
     )
   }
-  
+
   // 分类筛选
   if (selectedCategory.value) {
     filtered = filtered.filter(record => record.category === selectedCategory.value)
   }
-  
+
   // 时间筛选
   if (selectedTimeRange.value) {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    
+
     filtered = filtered.filter(record => {
       const recordDate = new Date(record.timestamp)
-      
+
       switch (selectedTimeRange.value) {
         case 'today':
           return recordDate >= today
@@ -366,7 +335,7 @@ const filteredHistory = computed(() => {
       }
     })
   }
-  
+
   return filtered
 })
 
@@ -382,7 +351,7 @@ const visiblePages = computed(() => {
   const pages = []
   const total = totalPages.value
   const current = currentPage.value
-  
+
   if (total <= 7) {
     for (let i = 1; i <= total; i++) {
       pages.push(i)
@@ -398,32 +367,32 @@ const visiblePages = computed(() => {
       pages.push(1, '...', current - 1, current, current + 1, '...', total)
     }
   }
-  
+
   return pages.filter(page => page !== '...' || pages.indexOf(page) === pages.lastIndexOf(page))
 })
 
 // 方法
 const getStreakDays = (): number => {
   if (historyRecords.value.length === 0) return 0
-  
-  const dates = [...new Set(historyRecords.value.map(record => 
+
+  const dates = [...new Set(historyRecords.value.map(record =>
     new Date(record.timestamp).toDateString()
   ))].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-  
+
   let streak = 0
   const today = new Date().toDateString()
-  
+
   for (let i = 0; i < dates.length; i++) {
     const expectedDate = new Date()
     expectedDate.setDate(expectedDate.getDate() - i)
-    
+
     if (dates[i] === expectedDate.toDateString()) {
       streak++
     } else {
       break
     }
   }
-  
+
   return streak
 }
 
@@ -432,7 +401,7 @@ const formatTime = (timestamp: string): string => {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays === 0) {
     return '今天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   } else if (diffDays === 1) {
@@ -450,7 +419,7 @@ const viewDetails = (record: HistoryRecord) => {
 
 const shareRecord = (record: HistoryRecord) => {
   const shareText = `我使用智能垃圾分类系统检测了一个物品，结果是：${record.category}，置信度：${record.confidence}%。`
-  
+
   if (navigator.share) {
     navigator.share({
       title: '垃圾分类检测结果',
