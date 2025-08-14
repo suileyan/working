@@ -116,10 +116,110 @@ export interface KnowledgeArticle {
 
 export type KnowledgeArticleListResponse = KnowledgeArticle[];
 
+export interface CreateKnowledgeArticleRequest {
+  title: string;
+  article_type: string;
+  content: string;
+  summary: string;
+  cover_image?: string;
+  is_published: boolean;
+  sort_order: number;
+}
+
+export interface UpdateKnowledgeArticleRequest {
+  title: string;
+  article_type: string;
+  content: string;
+  summary: string;
+  cover_image?: string;
+  is_published: boolean;
+  sort_order: number;
+}
+
 export interface StatisticsOverview {
   total_detections: number;
   total_users: number;
   accuracy_rate: number;
+  category_distribution: {
+    detected_category__name: string;
+    count: number;
+  }[];
+}
+
+// YOLO模型信息
+export interface YoloModelInfo {
+  model_name: string;
+  model_path: string;
+  model_size: string;
+  input_size: [number, number];
+  num_classes: number;
+  class_names: Record<string, string>;
+  confidence_threshold: number;
+  iou_threshold: number;
+  device: string;
+  loaded_at: string;
+}
+
+// YOLO模型配置
+export interface YoloModel {
+  id: number;
+  name: string;
+  model_path: string;
+  confidence_threshold: number;
+  iou_threshold: number;
+  max_detections: number;
+  input_size: number;
+  is_active: boolean;
+  model_exists: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type YoloModelListResponse = YoloModel[];
+
+export interface CreateYoloModelRequest {
+  name: string;
+  model_path: string;
+  confidence_threshold: number;
+  iou_threshold: number;
+  max_detections: number;
+  input_size: number;
+  is_active: boolean;
+}
+
+// YOLO检测任务
+export interface YoloDetectionTask {
+  id: number;
+  task_id: string;
+  task_type: string;
+  status: string;
+  input_file: string;
+  output_file: string;
+  model: {
+    id: number;
+    name: string;
+  };
+  detection_results: {
+    class_name: string;
+    confidence: number;
+  }[];
+  processing_time: number;
+  error_message: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type YoloDetectionTaskListResponse = YoloDetectionTask[];
+
+// YOLO检测统计
+export interface YoloDetectionStatistics {
+  total_detections: number;
+  detection_types: {
+    image: number;
+    video: number;
+    camera: number;
+  };
+  avg_processing_time: number;
   category_distribution: {
     detected_category__name: string;
     count: number;

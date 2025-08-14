@@ -1,8 +1,20 @@
 <script setup lang="ts">
     import { Motion } from "motion-v";
-    import { ref, onMounted, computed } from 'vue';
-    import { getKnowledgeArticlesAPI } from '@/api/admin/hzsystem_rubbish';
-    import type { KnowledgeArticle } from '@/types/apis/hzsystem_rubbish_T';
+    import { ref, computed, onMounted } from 'vue';
+    import { ElMessage, ElMessageBox } from 'element-plus';
+    import { Plus, Delete } from '@element-plus/icons-vue';
+    import { 
+      getKnowledgeArticlesAPI, 
+      createKnowledgeArticleAPI, 
+      updateKnowledgeArticleAPI, 
+      patchKnowledgeArticleAPI, 
+      deleteKnowledgeArticleAPI 
+    } from '@/api/admin/hzsystem_rubbish';
+    import type { 
+      KnowledgeArticle, 
+      CreateKnowledgeArticleRequest, 
+      UpdateKnowledgeArticleRequest 
+    } from '@/types/apis/hzsystem_rubbish_T';
 
     // 知识推广数据
     const knowledgeData = {
@@ -32,6 +44,47 @@
     const knowledgeArticles = ref<KnowledgeArticle[]>([]);
     const loading = ref(false);
     const serverPath = import.meta.env.VITE_SERVER_PATH;
+    const formRef = ref();
+
+    // 对话框相关
+    const dialogVisible = ref(false);
+    const dialogTitle = ref('');
+    const isEditing = ref(false);
+    const currentArticleId = ref<number | null>(null);
+    const imagePreviewUrl = ref('');
+
+    // 表单数据
+    const articleForm = ref<CreateKnowledgeArticleRequest>({
+      title: '',
+      article_type: 'guide',
+      content: '',
+      summary: '',
+      cover_image: '',
+      is_published: false,
+      sort_order: 1
+    });
+    const selectedFile = ref<File | null>(null);
+
+    // 表单验证规则
+    const formRules = {
+      title: [{ required: true, message: '请输入文章标题', trigger: 'blur' }],
+      article_type: [
+        { required: true, message: '请选择文章类型', trigger: 'change' },
+        { 
+          validator: (rule: any, value: any, callback: any) => {
+            if (value && !['guide', 'tips', 'policy'].includes(value)) {
+              callback(new Error('文章类型只能为guide/tips/policy'));
+            } else {
+              callback();
+            }
+          }, 
+          trigger: 'change' 
+        }
+      ],
+      content: [{ required: true, message: '请输入文章内容', trigger: 'blur' }],
+      summary: [{ required: true, message: '请输入文章摘要', trigger: 'blur' }],
+      sort_order: [{ required: true, message: '请输入排序值', trigger: 'blur' }]
+    };
 
     // 分页相关
     const currentPage = ref(1);
@@ -120,6 +173,155 @@
       return summary.substring(0, maxLength) + '...';
     };
 
+    // 创建文章
+    const handleCreate = () => {
+      dialogTitle.value = '创建知识文章';
+      isEditing.value = false;
+      currentArticleId.value = null;
+      articleForm.value = {
+        title: '',
+        article_type: 'guide',
+        content: '',
+        summary: '',
+        cover_image: '',
+        is_published: false,
+        sort_order: 1
+      };
+      selectedFile.value = null;
+      imagePreviewUrl.value = '';
+      dialogVisible.value = true;
+    };
+
+    // 编辑文章
+    const handleEdit = (article: KnowledgeArticle) => {
+      dialogTitle.value = '编辑知识文章';
+      isEditing.value = true;
+      currentArticleId.value = article.id;
+      articleForm.value = {
+        title: article.title,
+        article_type: article.article_type,
+        content: article.content,
+        summary: article.summary,
+        cover_image: article.cover_image || '',
+        is_published: article.is_published,
+        sort_order: article.sort_order
+      };
+      selectedFile.value = null;
+      imagePreviewUrl.value = article.cover_image ? getImageUrl(article.cover_image) : '';
+      dialogVisible.value = true;
+    };
+
+    // 删除文章
+    const handleDelete = async (article: KnowledgeArticle) => {
+      try {
+        await ElMessageBox.confirm(
+          `确定要删除文章「${article.title}」吗？此操作不可恢复。`,
+          '确认删除',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        );
+        
+        await deleteKnowledgeArticleAPI(article.id);
+        ElMessage.success('删除成功');
+        await fetchKnowledgeArticles();
+      } catch (error: any) {
+        if (error !== 'cancel') {
+          console.error('删除文章失败:', error);
+          ElMessage.error('删除失败');
+        }
+      }
+    };
+
+    // 提交表单
+    const handleSubmit = async () => {
+      if (!formRef.value) return;
+      
+      try {
+        await formRef.value.validate();
+        loading.value = true;
+        
+        let requestData: CreateKnowledgeArticleRequest | UpdateKnowledgeArticleRequest | FormData;
+        
+        if (selectedFile.value) {
+          // 有图片文件，使用 FormData
+          const formData = new FormData();
+          formData.append('title', articleForm.value.title);
+          formData.append('article_type', articleForm.value.article_type);
+          formData.append('sort_order', articleForm.value.sort_order.toString());
+          formData.append('is_published', articleForm.value.is_published.toString());
+          formData.append('summary', articleForm.value.summary);
+          formData.append('content', articleForm.value.content);
+          formData.append('cover_image', selectedFile.value);
+          requestData = formData;
+        } else {
+          // 没有图片文件，使用 JSON，不包含 cover_image 字段
+          const { cover_image, ...formDataWithoutImage } = articleForm.value;
+          requestData = formDataWithoutImage;
+        }
+        
+        if (isEditing.value && currentArticleId.value) {
+          await updateKnowledgeArticleAPI(currentArticleId.value, requestData as UpdateKnowledgeArticleRequest | FormData);
+          ElMessage.success('更新成功');
+        } else {
+          await createKnowledgeArticleAPI(requestData as CreateKnowledgeArticleRequest | FormData);
+          ElMessage.success('创建成功');
+        }
+        
+        dialogVisible.value = false;
+        await fetchKnowledgeArticles();
+      } catch (error) {
+        console.error('提交失败:', error);
+        ElMessage.error(isEditing.value ? '更新失败' : '创建失败');
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    // 取消操作
+    const handleCancel = () => {
+      dialogVisible.value = false;
+      selectedFile.value = null;
+      imagePreviewUrl.value = '';
+    };
+    
+    // 处理文件选择
+    const handleFileChange = (file: File) => {
+      selectedFile.value = file;
+      
+      // 创建预览URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreviewUrl.value = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      
+      return false; // 阻止自动上传
+    };
+    
+    // 移除图片
+    const handleRemoveImage = () => {
+      selectedFile.value = null;
+      imagePreviewUrl.value = '';
+      articleForm.value.cover_image = '';
+    };
+
+    // 快速切换发布状态
+    const togglePublishStatus = async (article: KnowledgeArticle) => {
+      try {
+        await patchKnowledgeArticleAPI(article.id, {
+          is_published: !article.is_published
+        });
+        ElMessage.success(article.is_published ? '已取消发布' : '已发布');
+        await fetchKnowledgeArticles();
+      } catch (error) {
+        console.error('切换发布状态失败:', error);
+        ElMessage.error('操作失败');
+      }
+    };
+
     // 页面加载时获取数据
     onMounted(() => {
       fetchKnowledgeArticles();
@@ -194,6 +396,7 @@
                 :whileHover="{ scale: 1.05 }"
                 :transition="{ duration: 0.3, delay: 0.5 }"
               >
+                <el-button type="success" size="small" @click="handleCreate">新建文章</el-button>
                 <el-button type="primary" size="small" @click="fetchKnowledgeArticles" :loading="loading">刷新数据</el-button>
               </Motion>
             </div>
@@ -442,6 +645,22 @@
               {{ new Date(row.updated_at).toLocaleString('zh-CN') }}
             </template>
           </el-table-column>
+          
+          <el-table-column label="操作" width="280" fixed="right">
+            <template #default="{ row }">
+              <div class="flex gap-2">
+                <el-button type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+                <el-button 
+                  :type="row.is_published ? 'warning' : 'success'" 
+                  size="small" 
+                  @click="togglePublishStatus(row)"
+                >
+                  {{ row.is_published ? '取消发布' : '发布' }}
+                </el-button>
+                <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+              </div>
+            </template>
+          </el-table-column>
         </el-table>
         
         <!-- 分页组件 -->
@@ -470,6 +689,123 @@
         </div>
       </el-card>
     </Motion>
+
+    <!-- 创建/编辑文章对话框 -->
+    <el-dialog 
+      v-model="dialogVisible" 
+      :title="dialogTitle" 
+      width="800px" 
+      :close-on-click-modal="false"
+      top="5vh"
+      :lock-scroll="true"
+      class="article-dialog"
+    >
+      <div class="dialog-content">
+      <el-form 
+        :model="articleForm" 
+        :rules="formRules" 
+        label-width="100px" 
+        ref="formRef"
+      >
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="文章标题" prop="title">
+              <el-input v-model="articleForm.title" placeholder="请输入文章标题" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="文章类型" prop="article_type">
+              <el-select v-model="articleForm.article_type" placeholder="请选择文章类型" style="width: 100%">
+                <el-option label="指南" value="guide" />
+                <el-option label="技巧" value="tips" />
+                <el-option label="政策" value="policy" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="排序值" prop="sort_order">
+              <el-input-number 
+                v-model="articleForm.sort_order" 
+                :min="1" 
+                :max="999" 
+                style="width: 100%" 
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="发布状态">
+              <el-switch 
+                v-model="articleForm.is_published" 
+                active-text="已发布" 
+                inactive-text="草稿" 
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-form-item label="封面图片">
+          <div class="image-upload-container">
+            <el-upload
+              class="image-uploader"
+              :before-upload="handleFileChange"
+              :show-file-list="false"
+              accept="image/*"
+            >
+              <div v-if="!imagePreviewUrl" class="upload-placeholder">
+                <el-icon class="upload-icon"><Plus /></el-icon>
+                <div class="upload-text">点击上传封面图片</div>
+              </div>
+              <div v-else class="image-preview">
+                <img :src="imagePreviewUrl" alt="封面预览" class="preview-image" />
+                <div class="image-overlay">
+                  <el-button type="danger" size="small" @click.stop="handleRemoveImage">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+              </div>
+            </el-upload>
+            <div class="upload-tips">
+              <p>支持 JPG、PNG、GIF 格式，建议尺寸 800x600px</p>
+            </div>
+          </div>
+        </el-form-item>
+        
+        <el-form-item label="文章摘要" prop="summary">
+          <el-input 
+            v-model="articleForm.summary" 
+            type="textarea" 
+            :rows="3" 
+            placeholder="请输入文章摘要" 
+            maxlength="200" 
+            show-word-limit 
+          />
+        </el-form-item>
+        
+        <el-form-item label="文章内容" prop="content">
+          <el-input 
+            v-model="articleForm.content" 
+            type="textarea" 
+            :rows="8" 
+            placeholder="请输入文章内容" 
+            maxlength="5000" 
+            show-word-limit 
+          />
+        </el-form-item>
+      </el-form>
+      </div>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="loading">
+            {{ isEditing ? '更新' : '创建' }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -521,7 +857,7 @@
   background-color: #f1f5f9;
 }
 
-/* 图片预览样式 */
+/* 增强图片预览样式 */
 :deep(.el-image) {
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
@@ -530,5 +866,167 @@
 :deep(.el-image:hover) {
   border-color: #3b82f6;
   transform: scale(1.05);
+}
+
+/* 对话框样式优化 */
+:deep(.el-dialog) {
+  border-radius: 12px;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #f8fafc;
+  border-radius: 12px 12px 0 0;
+  padding: 20px 24px;
+}
+
+:deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  background-color: #f8fafc;
+  border-radius: 0 0 12px 12px;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #374151;
+}
+
+:deep(.el-textarea__inner) {
+  border-radius: 8px;
+}
+
+:deep(.el-input__inner) {
+  border-radius: 8px;
+}
+
+/* 操作按钮样式 */
+.el-button + .el-button {
+  margin-left: 8px;
+}
+
+/* 图片上传样式 */
+.image-upload-container {
+  width: 100%;
+}
+
+.image-uploader {
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  width: 200px;
+  height: 150px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-uploader:hover {
+  border-color: #409eff;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #8c939d;
+}
+
+.upload-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  font-size: 14px;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-preview:hover .image-overlay {
+  opacity: 1;
+}
+
+.upload-tips {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.4;
+}
+
+.upload-tips p {
+  margin: 0;
+}
+
+/* 对话框样式 */
+.article-dialog :deep(.el-dialog) {
+  max-height: 90vh;
+  margin-top: 5vh !important;
+  margin-bottom: 5vh !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.article-dialog :deep(.el-dialog__body) {
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.dialog-content {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>
