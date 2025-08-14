@@ -53,34 +53,7 @@ use([
 
 // 垃圾分类分布数据已移至文件末尾的计算属性中
 
-const modelPerformanceData: EChartsOption = {
-  title: {
-    text: "模型性能监控",
-    left: "center",
-  },
-  tooltip: {
-    formatter: "{a} <br/>{b} : {c}%",
-  },
-  series: [
-    {
-      name: "准确率",
-      type: "gauge",
-      detail: {
-        formatter: "{value}%",
-      },
-      data: [{ value: 94, name: "准确率" }],
-      axisLine: {
-        lineStyle: {
-          color: [
-            [0.3, "#ff4757"],
-            [0.7, "#ffa502"],
-            [1, "#2ed573"],
-          ],
-        },
-      },
-    },
-  ],
-};
+// 模型性能监控数据已移至计算属性中
 
 // 动画配置
 const cardVariants = {
@@ -144,32 +117,58 @@ onMounted(() => {
   fetchDetectionRecords()
 })
 
-const dashboardData = computed(() => statistics.value ? {
-  totalUsers: {
-    value: statistics.value.total_users,
-    change: '',
-    label: '总用户数',
-  },
-  totalDetections: {
-    value: statistics.value.total_detections,
-    change: '',
-    label: '总检测次数',
-  },
-  averageAccuracy: {
-    value: statistics.value.accuracy_rate ? (statistics.value.accuracy_rate).toFixed(1) + '%' : '--',
-    change: '',
-    label: '平均准确率',
-  },
-  averageResponseTime: {
-    value: '--',
-    change: '',
-    label: '平均响应时间',
-  },
-} : {
-  totalUsers: { value: 0, change: '', label: '总用户数' },
-  totalDetections: { value: 0, change: '', label: '总检测次数' },
-  averageAccuracy: { value: '--', change: '', label: '平均准确率' },
-  averageResponseTime: { value: '--', change: '', label: '平均响应时间' },
+const dashboardData = computed(() => {
+  if (!detectionRecords.value.length) {
+    return {
+      totalUsers: { value: 0, change: '', label: '总用户数' },
+      totalDetections: { value: 0, change: '', label: '总检测次数' },
+      averageAccuracy: { value: '--', change: '', label: '平均准确率' },
+      averageResponseTime: { value: '--', change: '', label: '平均响应时间' },
+    };
+  }
+
+  const records = detectionRecords.value;
+  
+  // 计算总检测数（与history页面一致）
+  const totalDetections = records.length;
+  
+  // 计算总用户数（去重，与history页面一致）
+  const uniqueUsers = new Set(records.map(record => record.user));
+  const totalUsers = uniqueUsers.size;
+  
+  // 计算准确率（基于置信度平均值，与history页面一致）
+  const avgConfidence = records.length > 0 
+    ? records.reduce((sum, record) => sum + record.confidence, 0) / records.length
+    : 0;
+  const accuracyRate = Math.round(avgConfidence * 1000) / 10; // 保留一位小数
+  
+  // 计算平均响应时间（基于检测记录的处理时间）
+  const avgResponseTime = records.length > 0
+    ? records.reduce((sum, record) => sum + record.processing_time, 0) / records.length
+    : 0;
+
+  return {
+    totalUsers: {
+      value: totalUsers,
+      change: '',
+      label: '总用户数',
+    },
+    totalDetections: {
+      value: totalDetections,
+      change: '',
+      label: '总检测次数',
+    },
+    averageAccuracy: {
+      value: accuracyRate > 0 ? `${accuracyRate}%` : '--',
+      change: '',
+      label: '平均准确率',
+    },
+    averageResponseTime: {
+      value: avgResponseTime > 0 ? `${avgResponseTime.toFixed(2)}s` : '--',
+      change: '',
+      label: '平均响应时间',
+    },
+  };
 })
 
 // 基于检测记录的用户增长趋势（按月统计最近6个月）
@@ -229,7 +228,26 @@ const detectionStatsData = computed((): EChartsOption => {
       tooltip: { trigger: 'axis' },
       xAxis: { type: 'category', data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] },
       yAxis: { type: 'value' },
-      series: [{ data: [0, 0, 0, 0, 0, 0, 0], type: 'bar', itemStyle: { color: '#10b981' } }]
+      series: [{ 
+        data: [0, 0, 0, 0, 0, 0, 0], 
+        type: 'line', 
+        smooth: true,
+        itemStyle: { color: '#10b981' },
+        lineStyle: { color: '#10b981' },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+              { offset: 1, color: 'rgba(16, 185, 129, 0.1)' }
+            ]
+          }
+        }
+      }]
     }
   }
 
@@ -262,8 +280,23 @@ const detectionStatsData = computed((): EChartsOption => {
     yAxis: { type: 'value' },
     series: [{
       data: dailyCounts,
-      type: 'bar',
-      itemStyle: { color: '#10b981' }
+      type: 'line',
+      smooth: true,
+      itemStyle: { color: '#10b981' },
+      lineStyle: { color: '#10b981' },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+            { offset: 1, color: 'rgba(16, 185, 129, 0.1)' }
+          ]
+        }
+      }
     }]
   }
 })
@@ -306,6 +339,58 @@ const wasteDistributionData = computed((): EChartsOption => statistics.value ? {
       },
     },
   ],
+})
+
+// 基于检测记录的模型性能监控（准确率与history页面一致）
+const modelPerformanceData = computed((): EChartsOption => {
+  if (!detectionRecords.value.length) {
+    return {
+      title: { text: '模型性能监控', left: 'center' },
+      tooltip: { formatter: '{a} <br/>{b} : {c}%' },
+      series: [{
+        name: '准确率',
+        type: 'gauge',
+        detail: { formatter: '{value}%' },
+        data: [{ value: 0, name: '准确率' }],
+        axisLine: {
+          lineStyle: {
+            color: [
+              [0.3, '#ff4757'],
+              [0.7, '#ffa502'],
+              [1, '#2ed573'],
+            ],
+          },
+        },
+      }]
+    }
+  }
+
+  // 计算准确率（基于置信度平均值，与history页面逻辑一致）
+  const records = detectionRecords.value
+  const avgConfidence = records.length > 0 
+    ? records.reduce((sum, record) => sum + record.confidence, 0) / records.length
+    : 0
+  const accuracyRate = Math.round(avgConfidence * 1000) / 10 // 保留一位小数
+
+  return {
+    title: { text: '模型性能监控', left: 'center' },
+    tooltip: { formatter: '{a} <br/>{b} : {c}%' },
+    series: [{
+      name: '准确率',
+      type: 'gauge',
+      detail: { formatter: '{value}%' },
+      data: [{ value: accuracyRate, name: '准确率' }],
+      axisLine: {
+        lineStyle: {
+          color: [
+            [0.3, '#ff4757'],
+            [0.7, '#ffa502'],
+            [1, '#2ed573'],
+          ],
+        },
+      },
+    }]
+  }
 })
 </script>
 
