@@ -103,19 +103,19 @@ export const adminMenuItems: AdminHeader[] = [
     id: "4",
     title: "宣传知识管理",
     icon: "Collection",
-    path: "/admin/PromoteKnowledge",
+    path: "/admin/promoteKnowledge",
   },
   {
     id: "5",
     title: "模型参数管理",
     icon: "SetUp",
-    path: "/admin/ModelParameter",
+    path: "/admin/modelParameter",
   },
   {
     id: "6",
     title: "数据集展示",
     icon: "DataAnalysis",
-    path: "/admin/DatasetShow",
+    path: "/admin/datasetShow",
   },
 ];
 
