@@ -155,8 +155,6 @@
 import { ref, onMounted } from 'vue'
 import { Camera, VideoCamera, Picture, Grape, Apple, Warning, DeleteFilled } from '@element-plus/icons-vue'
 import router from '@/router'
-import { getDatasetInfo } from '@/api/common/dataset'
-import type { DatasetResponse } from '@/types/factory'
 
 interface Button {
   text: string

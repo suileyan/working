@@ -1,0 +1,678 @@
+{
+  "overview": {
+    "total_categories": 44,
+    "total_images": 526724,
+    "train_images": 526724,
+    "val_images": 0,
+    "dataset_size": 1233.11
+  },
+  "categories": [
+    {
+      "id": "0",
+      "name": "yicixingkuaicanhe",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "1",
+      "name": "shujizhizhang",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "chongdianbao",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "3",
+      "name": "shengfanshengcai",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "4",
+      "name": "bao",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "5",
+      "name": "lajitong",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "6",
+      "name": "suliaoqimin",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "7",
+      "name": "suliaowanju",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "8",
+      "name": "suliaoyijia",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "9",
+      "name": "dagutou",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "10",
+      "name": "gandianchi",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "11",
+      "name": "kuaidizhidai",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "12",
+      "name": "chatoudianxian",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "13",
+      "name": "jiuyifu",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "14",
+      "name": "yilaguan",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "15",
+      "name": "zhentou",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "16",
+      "name": "guopiguorou",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "17",
+      "name": "maorongwanju",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "18",
+      "name": "wusunsuliao",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "19",
+      "name": "wusunyongzhi",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "20",
+      "name": "xihuyongpin",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "21",
+      "name": "yandi",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "22",
+      "name": "yaqian",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "23",
+      "name": "boliqimin",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "24",
+      "name": "zhenban",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "25",
+      "name": "kuaizi",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "26",
+      "name": "zhihezhixiang",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "27",
+      "name": "huapen",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "28",
+      "name": "chayezha",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "29",
+      "name": "caibangcaiye",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "30",
+      "name": "danke",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "31",
+      "name": "tiaoliaoping",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "32",
+      "name": "ruangao",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "33",
+      "name": "guoqiyaowu",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "34",
+      "name": "jiuping",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "35",
+      "name": "jinshuchuju",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "36",
+      "name": "jinshuqimin",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "37",
+      "name": "jinshushipinguan",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "38",
+      "name": "guo",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "39",
+      "name": "taociqimin",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "40",
+      "name": "xie",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "41",
+      "name": "shiyongyoutong",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "42",
+      "name": "yinliaoping",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    },
+    {
+      "id": "43",
+      "name": "yugu",
+      "train_count": 11971,
+      "val_count": 0,
+      "total_count": 11971,
+      "sample_images": [
+        "/static/datasets/train/images/img_1.jpg",
+        "/static/datasets/train/images/img_10.jpg",
+        "/static/datasets/train/images/img_100.jpg",
+        "/static/datasets/train/images/img_1000.jpg",
+        "/static/datasets/train/images/img_10000.jpg"
+      ]
+    }
+  ],
+  "config": {
+    "train": "datasets/train/images",
+    "val": "datasets/valid/images",
+    "nc": 44,
+    "names": [
+      "yicixingkuaicanhe",
+      "shujizhizhang",
+      "chongdianbao",
+      "shengfanshengcai",
+      "bao",
+      "lajitong",
+      "suliaoqimin",
+      "suliaowanju",
+      "suliaoyijia",
+      "dagutou",
+      "gandianchi",
+      "kuaidizhidai",
+      "chatoudianxian",
+      "jiuyifu",
+      "yilaguan",
+      "zhentou",
+      "guopiguorou",
+      "maorongwanju",
+      "wusunsuliao",
+      "wusunyongzhi",
+      "xihuyongpin",
+      "yandi",
+      "yaqian",
+      "boliqimin",
+      "zhenban",
+      "kuaizi",
+      "zhihezhixiang",
+      "huapen",
+      "chayezha",
+      "caibangcaiye",
+      "danke",
+      "tiaoliaoping",
+      "ruangao",
+      "guoqiyaowu",
+      "jiuping",
+      "jinshuchuju",
+      "jinshuqimin",
+      "jinshushipinguan",
+      "guo",
+      "taociqimin",
+      "xie",
+      "shiyongyoutong",
+      "yinliaoping",
+      "yugu"
+    ]
+  }
+}
