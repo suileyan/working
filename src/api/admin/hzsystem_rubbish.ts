@@ -11,7 +11,14 @@ import type {
   KnowledgeArticleListResponse,
   CreateKnowledgeArticleRequest,
   UpdateKnowledgeArticleRequest,
-  StatisticsOverview
+  StatisticsOverview,
+  YoloModelInfo,
+  YoloModel,
+  YoloModelListResponse,
+  CreateYoloModelRequest,
+  YoloDetectionTask,
+  YoloDetectionTaskListResponse,
+  YoloDetectionStatistics
 } from '@/types/apis/hzsystem_rubbish_T'
 import serviceAxios from '@/http'
 
@@ -133,6 +140,82 @@ export function deleteKnowledgeArticleAPI(id: number): Promise<void> {
 export function getStatisticsOverviewAPI(): Promise<StatisticsOverview> {
   return serviceAxios({
     url: '/api/rubbish/api/statistics/overview/',
+    method: 'get'
+  })
+}
+
+// ==================== YOLO相关API ====================
+
+// 2.3 获取当前YOLO模型信息
+export const getYoloModelInfo = (): Promise<YoloModelInfo> => {
+  return serviceAxios({
+    url: '/api/yolo/api/model/info/',
+    method: 'get'
+  })
+}
+
+// 2.4 获取所有YOLO模型配置
+export const getYoloModels = (): Promise<YoloModelListResponse> => {
+  return serviceAxios({
+    url: '/api/yolo/api/models/',
+    method: 'get'
+  })
+}
+
+// 创建YOLO模型
+export const createYoloModel = (data: CreateYoloModelRequest): Promise<YoloModel> => {
+  return serviceAxios({
+    url: '/api/yolo/api/models/',
+    method: 'post',
+    data
+  })
+}
+
+// 更新YOLO模型
+export const updateYoloModel = (id: number, data: Partial<CreateYoloModelRequest>): Promise<YoloModel> => {
+  return serviceAxios({
+    url: `/api/yolo/api/models/${id}/`,
+    method: 'put',
+    data
+  })
+}
+
+// 删除YOLO模型
+export const deleteYoloModel = (id: number): Promise<void> => {
+  return serviceAxios({
+    url: `/api/yolo/api/models/${id}/`,
+    method: 'delete'
+  })
+}
+
+// 2.5 获取检测任务列表
+export const getYoloDetectionTasks = (): Promise<YoloDetectionTaskListResponse> => {
+  return serviceAxios({
+    url: '/api/yolo/api/tasks/',
+    method: 'get'
+  })
+}
+
+// 获取单个检测任务详情
+export const getYoloDetectionTask = (id: number): Promise<YoloDetectionTask> => {
+  return serviceAxios({
+    url: `/api/yolo/api/tasks/${id}/`,
+    method: 'get'
+  })
+}
+
+// 删除检测任务
+export const deleteYoloDetectionTask = (id: number): Promise<void> => {
+  return serviceAxios({
+    url: `/api/yolo/api/tasks/${id}/`,
+    method: 'delete'
+  })
+}
+
+// 2.6 获取YOLO检测统计信息
+export const getYoloDetectionStatistics = (): Promise<YoloDetectionStatistics> => {
+  return serviceAxios({
+    url: '/api/yolo/api/statistics/',
     method: 'get'
   })
 }
