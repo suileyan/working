@@ -46,7 +46,16 @@
     "content": "内容管理",
     "articles": "文章管理",
     "categories": "分类管理",
-    "admin": "管理"
+    "admin": "后台管理",
+    "index": "首页",
+    "detection": "智能检测",
+    "history": "历史记录",
+    "knowledge": "分类知识",
+    "stats": "个人统计",
+    "ai": "AI识别",
+    "history": "历史记录",
+    "knowledgeClassify": "知识分类",
+    "Statistics": "统计分析"
   },
   "form": {
     "username": "用户名",

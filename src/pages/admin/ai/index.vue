@@ -4,6 +4,7 @@ import { Motion } from 'motion-v'
 import { useAiStore } from '@/stores/ai'
 import { storeToRefs } from 'pinia'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { TrendCharts, Setting, Refresh, Warning, SuccessFilled, InfoFilled } from '@element-plus/icons-vue'
 import type { AiChat, Emoji } from '@/types/factory'
 import { useUserStore } from '@/stores/auth/user'
 

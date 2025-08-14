@@ -46,7 +46,12 @@
     "content": "Content Management",
     "articles": "Articles",
     "categories": "Categories",
-    "admin":"admin"
+    "admin": "admin",
+    "index": "Home",
+    "detection": "Smart Detection",
+    "history": "History",
+    "knowledge": "Classification Guide",
+    "stats": "Personal Stats"
   },
   "form": {
     "username": "Username",

@@ -12,6 +12,7 @@ declare module 'vue' {
     CaptchaConfig: typeof import('./src/components/pages/admin/systemConfig/CaptchaConfig.vue')['default']
     ChangePassword: typeof import('./src/components/pages/userInfo/ChangePassword.vue')['default']
     ColorThemeSwitch: typeof import('./src/components/layout/btns/ColorThemeSwitch.vue')['default']
+    DetectionResult: typeof import('./src/components/DetectionResult.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']

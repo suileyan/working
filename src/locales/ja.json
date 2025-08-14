@@ -46,7 +46,12 @@
     "content": "コンテンツ管理",
     "articles": "記事管理",
     "categories": "カテゴリ管理",
-    "admin":"管理"
+    "admin": "管理",
+    "index": "インデックス",
+    "ai": "AI認識",
+    "history": "履歴",
+    "knowledgeClassify": "知識分類",
+    "Statistics": "統計分析"
   },
   "form": {
     "username": "ユーザー名",
