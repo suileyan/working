@@ -25,115 +25,33 @@ use([
 ]);
 
 // 仪表板数据
-const dashboardData = {
-  totalUsers: {
-    value: 1421,
-    change: "+5.2%",
-    label: "总用户数",
-  },
-  totalDetections: {
-    value: 5859,
-    change: "+12.8%",
-    label: "总检测次数",
-  },
-  averageAccuracy: {
-    value: "94.0%",
-    change: "+0.3%",
-    label: "平均准确率",
-  },
-  averageResponseTime: {
-    value: "+8%",
-    change: "-0.1s",
-    label: "平均响应时间",
-  },
-};
-// 图表数据
-const userGrowthData: EChartsOption = {
-  title: {
-    text: "用户增长趋势",
-    left: "center",
-  },
-  tooltip: {
-    trigger: "axis",
-  },
-  xAxis: {
-    type: "category",
-    data: ["1月", "2月", "3月", "4月", "5月", "6月"],
-  },
-  yAxis: {
-    type: "value",
-  },
-  series: [
-    {
-      data: [120, 200, 150, 280, 350, 420],
-      type: "line",
-      smooth: true,
-      itemStyle: {
-        color: "#3b82f6",
-      },
-    },
-  ],
-};
+// const dashboardData = {
+//   totalUsers: {
+//     value: 1421,
+//     change: "+5.2%",
+//     label: "总用户数",
+//   },
+//   totalDetections: {
+//     value: 5859,
+//     change: "+12.8%",
+//     label: "总检测次数",
+//   },
+//   averageAccuracy: {
+//     value: "94.0%",
+//     change: "+0.3%",
+//     label: "平均准确率",
+//   },
+//   averageResponseTime: {
+//     value: "+8%",
+//     change: "-0.1s",
+//     label: "平均响应时间",
+//   },
+// };
+// 用户增长趋势数据已移至计算属性中
 
-const detectionStatsData: EChartsOption = {
-  title: {
-    text: "检测量统计",
-    left: "center",
-  },
-  tooltip: {
-    trigger: "axis",
-  },
-  xAxis: {
-    type: "category",
-    data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
-  },
-  yAxis: {
-    type: "value",
-  },
-  series: [
-    {
-      data: [820, 932, 901, 934, 1290, 1330, 1320],
-      type: "bar",
-      itemStyle: {
-        color: "#10b981",
-      },
-    },
-  ],
-};
+// 检测量统计数据已移至计算属性中
 
-const wasteDistributionData: EChartsOption = {
-  title: {
-    text: "垃圾分类分布",
-    left: "center",
-  },
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    orient: "vertical",
-    left: "left",
-  },
-  series: [
-    {
-      name: "垃圾类型",
-      type: "pie",
-      radius: "50%",
-      data: [
-        { value: 1048, name: "可回收垃圾" },
-        { value: 735, name: "有害垃圾" },
-        { value: 580, name: "湿垃圾" },
-        { value: 484, name: "干垃圾" },
-      ],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: "rgba(0, 0, 0, 0.5)",
-        },
-      },
-    },
-  ],
-};
+// 垃圾分类分布数据已移至文件末尾的计算属性中
 
 const modelPerformanceData: EChartsOption = {
   title: {
@@ -197,10 +115,13 @@ const iconVariants = {
   },
   transition: { duration: 0.6, delay: 0.3, ease: ["easeOut"] },
 };
-import { getStatisticsOverviewAPI } from '@/api/admin/hzsystem_rubbish'
-import { ref, onMounted } from 'vue'
+import { getStatisticsOverviewAPI, getDetectionRecordsAPI } from '@/api/admin/hzsystem_rubbish'
+import type { DetectionRecord } from '@/types/apis/hzsystem_rubbish_T'
+import { ref, onMounted, computed } from 'vue'
 const statistics = ref()
+const detectionRecords = ref<DetectionRecord[]>([])
 const loading = ref(false)
+
 const fetchStatistics = async () => {
   loading.value = true
   try {
@@ -209,7 +130,183 @@ const fetchStatistics = async () => {
     loading.value = false
   }
 }
-onMounted(fetchStatistics)
+
+const fetchDetectionRecords = async () => {
+  try {
+    detectionRecords.value = await getDetectionRecordsAPI()
+  } catch (error) {
+    console.error('获取检测记录失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchStatistics()
+  fetchDetectionRecords()
+})
+
+const dashboardData = computed(() => statistics.value ? {
+  totalUsers: {
+    value: statistics.value.total_users,
+    change: '',
+    label: '总用户数',
+  },
+  totalDetections: {
+    value: statistics.value.total_detections,
+    change: '',
+    label: '总检测次数',
+  },
+  averageAccuracy: {
+    value: statistics.value.accuracy_rate ? (statistics.value.accuracy_rate).toFixed(1) + '%' : '--',
+    change: '',
+    label: '平均准确率',
+  },
+  averageResponseTime: {
+    value: '--',
+    change: '',
+    label: '平均响应时间',
+  },
+} : {
+  totalUsers: { value: 0, change: '', label: '总用户数' },
+  totalDetections: { value: 0, change: '', label: '总检测次数' },
+  averageAccuracy: { value: '--', change: '', label: '平均准确率' },
+  averageResponseTime: { value: '--', change: '', label: '平均响应时间' },
+})
+
+// 基于检测记录的用户增长趋势（按月统计最近6个月）
+const userGrowthData = computed((): EChartsOption => {
+  if (!detectionRecords.value.length) {
+    return {
+      title: { text: '用户增长趋势', left: 'center' },
+      tooltip: { trigger: 'axis' },
+      xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
+      yAxis: { type: 'value' },
+      series: [{ data: [0, 0, 0, 0, 0, 0], type: 'line', smooth: true, itemStyle: { color: '#3b82f6' } }]
+    }
+  }
+
+  // 获取最近6个月的数据
+  const now = new Date()
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      label: `${date.getMonth() + 1}月`
+    }
+  })
+
+  // 统计每月活跃用户数（有检测记录的用户）
+  const monthlyUserCounts = last6Months.map(monthInfo => {
+    const uniqueUsers = new Set()
+    detectionRecords.value.forEach(record => {
+      const recordDate = new Date(record.created_at)
+      if (recordDate.getFullYear() === monthInfo.year && recordDate.getMonth() + 1 === monthInfo.month) {
+        uniqueUsers.add(record.user)
+      }
+    })
+    return uniqueUsers.size
+  })
+
+  return {
+    title: { text: '用户活跃趋势（最近6个月）', left: 'center' },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: last6Months.map(m => m.label) },
+    yAxis: { type: 'value' },
+    series: [{
+      data: monthlyUserCounts,
+      type: 'line',
+      smooth: true,
+      itemStyle: { color: '#3b82f6' }
+    }]
+  }
+})
+
+// 基于检测记录的检测量统计（按天统计最近7天）
+const detectionStatsData = computed((): EChartsOption => {
+  if (!detectionRecords.value.length) {
+    return {
+      title: { text: '检测量统计', left: 'center' },
+      tooltip: { trigger: 'axis' },
+      xAxis: { type: 'category', data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] },
+      yAxis: { type: 'value' },
+      series: [{ data: [0, 0, 0, 0, 0, 0, 0], type: 'bar', itemStyle: { color: '#10b981' } }]
+    }
+  }
+
+  // 获取最近7天的数据
+  const now = new Date()
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(now)
+    date.setDate(date.getDate() - (6 - i))
+    return date.toISOString().split('T')[0]
+  })
+
+  // 统计每天的检测次数
+  const dailyCounts = last7Days.map(date => {
+    return detectionRecords.value.filter(record => {
+      const recordDate = new Date(record.created_at).toISOString().split('T')[0]
+      return recordDate === date
+    }).length
+  })
+
+  // 生成星期标签
+  const weekLabels = last7Days.map(date => {
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    return weekdays[new Date(date).getDay()]
+  })
+
+  return {
+    title: { text: '检测量统计（最近7天）', left: 'center' },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: weekLabels },
+    yAxis: { type: 'value' },
+    series: [{
+      data: dailyCounts,
+      type: 'bar',
+      itemStyle: { color: '#10b981' }
+    }]
+  }
+})
+
+const wasteDistributionData = computed((): EChartsOption => statistics.value ? {
+  title: { text: '垃圾分类分布', left: 'center' },
+  tooltip: { trigger: 'item' },
+  legend: { orient: 'vertical', left: 'left' },
+  series: [
+    {
+      name: '垃圾类型',
+      type: 'pie',
+      radius: '50%',
+      data: statistics.value.category_distribution.map((item: {detected_category__name: string, count: number}) => ({ value: item.count, name: item.detected_category__name })),
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+        },
+      },
+    },
+  ],
+} : {
+  title: { text: '垃圾分类分布', left: 'center' },
+  tooltip: { trigger: 'item' },
+  legend: { orient: 'vertical', left: 'left' },
+  series: [
+    {
+      name: '垃圾类型',
+      type: 'pie',
+      radius: '50%',
+      data: [],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+        },
+      },
+    },
+  ],
+})
 </script>
 
 <template>
@@ -560,7 +657,7 @@ const dashboardData = computed(() => statistics.value ? {
   averageAccuracy: { value: '--', change: '', label: '平均准确率' },
   averageResponseTime: { value: '--', change: '', label: '平均响应时间' },
 })
-const wasteDistributionData = computed(() => statistics.value ? {
+const wasteDistributionData = computed((): EChartsOption => statistics.value ? {
   title: { text: '垃圾分类分布', left: 'center' },
   tooltip: { trigger: 'item' },
   legend: { orient: 'vertical', left: 'left' },
