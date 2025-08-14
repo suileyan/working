@@ -100,14 +100,14 @@ export interface NotificationDetailResponse {
 
 // 通知表单验证规则
 export interface NotificationFormRules {
-  title: FormValidationRule[]
-  content: FormValidationRule[]
-  type: FormValidationRule[]
-  priority: FormValidationRule[]
+  title: NotificationFormValidationRule[]
+  content: NotificationFormValidationRule[]
+  type: NotificationFormValidationRule[]
+  priority: NotificationFormValidationRule[]
 }
 
 // 表单验证规则类型（如果在其他文件中没有定义）
-export interface FormValidationRule {
+export interface NotificationFormValidationRule {
   required?: boolean
   message?: string
   trigger?: string | string[]

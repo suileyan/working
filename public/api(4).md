@@ -2,6 +2,20 @@
 
 ## 概述
 
+本文档详细描述了智能垃圾分类系统的所有API接口，包括HTTP REST API和WebSocket接口。系统包含三个核心应用模块：
+
+- **hzsystem_rubbish**: 垃圾分类核心功能
+- **hzsystem_yolo**: YOLO模型检测服务
+- **hzsystem_websocket**: WebSocket实时通信
+
+## 基础信息
+
+- **基础URL**: `http://localhost:8000`
+- **API版本**: v1
+- **数据格式**: JSON
+- **字符编码**: UTF-8
+
+---
 
 ## 1. 垃圾分类应用 (hzsystem_rubbish)
 
@@ -14,42 +28,35 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
-	"overview": {
-		"total_categories": 44,
-		"total_images": 526724,
-		"train_images": 526724,
-		"val_images": 0,
-		"dataset_size": 1233.11
-	},
-	"categories": [
-		{
-			"id": "0",
-			"name": "yicixingkuaicanhe",
-			"train_count": 11971,
-			"val_count": 0,
-			"total_count": 11971,
-			"sample_images": [
-				"/static/datasets/train/images/img_1.jpg",
-				"/static/datasets/train/images/img_10.jpg",
-				"/static/datasets/train/images/img_100.jpg",
-				"/static/datasets/train/images/img_1000.jpg",
-				"/static/datasets/train/images/img_10000.jpg"
-			]
-		},
-	],
-	"config": {
-		"train": "datasets/train/images",
-		"val": "datasets/valid/images",
-		"nc": 44,
-		"names": [
-			"yicixingkuaicanhe",
-			"shujizhizhang",
-			"chongdianbao",
-			"shengfanshengcai",...
-		]
-	}
+  "overview": {
+    "total_categories": 44,
+    "total_images": 15000,
+    "train_images": 12000,
+    "val_images": 3000,
+    "dataset_size": 2048.5
+  },
+  "categories": [
+    {
+      "id": 0,
+      "name": "塑料瓶",
+      "train_count": 300,
+      "val_count": 75,
+      "total_count": 375,
+      "sample_images": [
+        "/static/datasets/train/images/bottle_001.jpg",
+        "/static/datasets/train/images/bottle_002.jpg"
+      ]
+    }
+  ],
+  "config": {
+    "names": {
+      "0": "塑料瓶",
+      "1": "易拉罐"
+    }
+  }
 }
 ```
 
@@ -62,50 +69,36 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 [
-	{
-		"id": 1,
-		"name": "测试分类",
-		"category_type": "recyclable",
-		"description": "自动化测试分类",
-		"disposal_method": "投放到测试垃圾桶",
-		"icon": "[TEST]",
-		"color": "#FF6B6B",
-		"created_at": "2025-08-14T14:13:12.096740",
-		"updated_at": "2025-08-14T14:13:12.096740"
-	},...
+  {
+    "id": 1,
+    "name": "可回收垃圾",
+    "category_type": "recyclable",
+    "description": "可以回收利用的垃圾",
+    "disposal_method": "投放到蓝色垃圾桶",
+    "icon": "♻️",
+    "color": "#007bff",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
 ]
 ```
 
 **创建分类**: `POST /api/rubbish/api/categories/`
 
 **请求体**:
+
 ```json
 {
   "name": "新分类",
   "category_type": "recyclable",
   "description": "分类描述",
   "disposal_method": "处理方法",
-  "icon": "ABC",
+  "icon": "🗑️",
   "color": "#666666"
 }
-```
-**响应格式**:
-```json
-
-{
-	"id": 14,
-	"name": "aaaa",
-	"category_type": "recyclable",
-	"description": "分类描述",
-	"disposal_method": "处理方法",
-	"icon": "ABC",
-	"color": "#666666",
-	"created_at": "2025-08-14T14:37:37.108843",
-	"updated_at": "2025-08-14T14:37:37.108843"
-}
-
 ```
 
 ### 1.3 垃圾物品列表接口
@@ -115,29 +108,34 @@
 **功能描述**: 获取垃圾物品列表
 
 **请求参数**:
+
 - `category` (可选): 分类ID，用于过滤特定分类的物品
 
 **响应格式**:
+
 ```json
 [
-	{
-		"id": 13,
-		"category_name": "有害垃圾",
-		"category_type": "hazardous",
-		"name": "废农药",
-		"description": "农药包装物",
-		"disposal_tips": "清洗干净后投放",
-		"image": null,
-		"created_at": "2025-08-14T14:37:24.449602",
-		"updated_at": "2025-08-14T14:37:24.449602",
-		"category": 12
-	},...
+  {
+    "id": 1,
+    "name": "塑料瓶",
+    "category": {
+      "id": 1,
+      "name": "可回收垃圾",
+      "category_type": "recyclable"
+    },
+    "description": "各种塑料饮料瓶",
+    "disposal_tips": "清洗后投放",
+    "image": "/media/garbage_items/bottle.jpg",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
 ]
 ```
 
 **创建物品**: `POST /api/rubbish/api/items/`
 
 **请求体**:
+
 ```json
 {
   "name": "物品名称",
@@ -155,67 +153,166 @@
 **功能描述**: 获取检测记录列表
 
 **请求参数**:
+
 - `user` (可选): 用户ID
 - `type` (可选): 检测类型 (image/video/camera)
 
 **响应格式**:
+
 ```json
-	[{
-		"id": 1,
-		"user_name": "testuser5",
-		"category_name": "有害垃圾",
-		"item_name": "过期药品",
-		"detection_type": "camera",
-		"original_file": "/detections/original/test_1.jpg",
-		"result_image": "/detections/results/result_1.jpg",
-		"confidence": 0.95,
-		"processing_time": 1.74,
-		"is_correct": true,
-		"user_feedback": "很准确",
-		"detection_data": {
-			"bbox": [
-				102,
-				168,
-				268,
-				326
-			],
-			"area": 14145
-		},
-		"created_at": "2025-08-14T14:37:53.468074",
-		"user": 6,
-		"detected_category": 12,
-		"detected_item": 11
-	},...
+[
+  {
+    "id": 1,
+    "user": {
+      "id": 1,
+      "username": "testuser"
+    },
+    "detection_type": "image",
+    "original_file": "/media/detections/original/image.jpg",
+    "result_image": "/media/detections/results/result.jpg",
+    "detected_category": {
+      "id": 1,
+      "name": "可回收垃圾"
+    },
+    "detected_item": {
+      "id": 1,
+      "name": "塑料瓶"
+    },
+    "confidence": 0.95,
+    "processing_time": 1.23,
+    "is_correct": true,
+    "user_feedback": "检测正确",
+    "detection_data": {},
+    "created_at": "2024-01-01T00:00:00Z"
+  }
 ]
 ```
 
 ### 1.5 知识文章接口
+
+#### 1.5.1 获取知识文章列表
 
 **接口地址**: `GET /api/rubbish/api/knowledge/`
 
 **功能描述**: 获取知识文章列表
 
 **请求参数**:
+
 - `type` (可选): 文章类型 (guide/tips/policy)
 
 **响应格式**:
+
 ```json
 [
-	{
-		"id": 1,
-		"title": "垃圾分类完全指南",
-		"article_type": "guide",
-		"content": "垃圾分类是指按照垃圾的不同成分、属性、利用价值以及对环境的影响，并根据不同的处置方式的要求，分成属性不同的若干种类。垃圾分类收集是指垃圾按其可处置的性能或可利用的价值而分别收集的方式，其目的是为资源回收和后续处置带来便利。\n\n可回收垃圾主要包括：纸类、塑料、金属、玻璃、织物等。这些垃圾通过综合处理回收利用，可以减少污染，节省资源。\n\n厨余垃圾主要包括：剩菜剩饭、骨头、菜根菜叶、果皮等食品类废物。这类垃圾可以就地处理堆肥，每吨可生产约0.3吨有机肥料。\n\n有害垃圾主要包括：废电池、废日光灯管、废水银温度计、过期药品等。这些垃圾需要特殊安全处理。\n\n其他垃圾主要包括：除上述几类垃圾之外的砖瓦陶瓷、渣土、卫生间废纸、纸巾等难以回收的废弃物。",
-		"summary": "详细介绍垃圾分类的基本知识和操作方法",
-		"cover_image": null,
-		"is_published": true,
-		"view_count": 1250,
-		"sort_order": 1,
-		"created_at": "2025-08-14T14:37:53.777105",
-		"updated_at": "2025-08-14T14:37:53.777105"
-	},...
+  {
+    "id": 1,
+    "title": "垃圾分类指南",
+    "article_type": "guide",
+    "content": "详细的垃圾分类指南内容...",
+    "summary": "文章摘要",
+    "cover_image": "/media/knowledge/cover.jpg",
+    "is_published": true,
+    "view_count": 100,
+    "sort_order": 1,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
 ]
 ```
+
+#### 1.5.2 创建知识文章
+
+**接口地址**: `POST /api/rubbish/api/knowledge/`
+
+**功能描述**: 创建新的知识文章
+
+**请求格式**: `application/json` 或 `multipart/form-data`（含图片）
+
+**请求体**:
+
+```json
+{
+  "title": "新的垃圾分类指南",
+  "article_type": "guide",
+  "content": "详细的分类指南内容...",
+  "summary": "文章摘要",
+  "cover_image": "图片文件（可选）",
+  "is_published": true,
+  "sort_order": 1
+}
+```
+
+**响应格式**:
+
+```json
+{
+  "id": 2,
+  "title": "新的垃圾分类指南",
+  "article_type": "guide",
+  "content": "详细的分类指南内容...",
+  "summary": "文章摘要",
+  "cover_image": "/media/knowledge/cover.jpg",
+  "is_published": true,
+  "view_count": 0,
+  "sort_order": 1,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+#### 1.5.3 更新知识文章
+
+**接口地址**: `PUT /api/rubbish/api/knowledge/{id}/` （全量更新）或 `PATCH /api/rubbish/api/knowledge/{id}/` （部分更新）
+
+**功能描述**: 更新指定ID的知识文章
+
+**路径参数**:
+
+- `id`: 文章ID
+
+**请求体** (PUT - 需要所有字段):
+
+```json
+{
+  "title": "更新后的标题",
+  "article_type": "tips",
+  "content": "更新后的内容...",
+  "summary": "更新后的摘要",
+  "is_published": false,
+  "sort_order": 2
+}
+```
+
+**请求体** (PATCH - 仅需要更新的字段):
+
+```json
+{
+  "title": "仅更新标题",
+  "is_published": false
+}
+```
+
+**响应格式**: 返回更新后的文章完整信息
+
+#### 1.5.4 删除知识文章
+
+**接口地址**: `DELETE /api/rubbish/api/knowledge/{id}/`
+
+**功能描述**: 删除指定ID的知识文章
+
+**路径参数**:
+
+- `id`: 文章ID
+
+**响应格式**: 返回204状态码（无内容）
+
+**注意事项**:
+
+- 文章类型 `article_type` 支持: `guide`（分类指南）、`tips`（环保小贴士）、`policy`（政策法规）
+- `cover_image` 字段支持图片文件上传
+- `is_published` 控制文章是否在前端显示
+- `sort_order` 用于控制文章排序，数值越小越靠前
+- `view_count` 系统自动维护，无需手动设置
 
 ### 1.6 统计概览接口
 
@@ -226,37 +323,22 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
-	"total_detections": 100,
-	"total_users": 5,
-	"accuracy_rate": 68,
-	"category_distribution": [
-		{
-			"detected_category__name": "测试分类",
-			"count": 54
-		},
-		{
-			"detected_category__name": "aaaa",
-			"count": 20
-		},
-		{
-			"detected_category__name": "有害垃圾",
-			"count": 9
-		},
-		{
-			"detected_category__name": "可回收垃圾",
-			"count": 7
-		},
-		{
-			"detected_category__name": "厨余垃圾",
-			"count": 6
-		},
-		{
-			"detected_category__name": "其他垃圾",
-			"count": 4
-		}
-	]
+  "total_detections": 1000,
+  "total_users": 50,
+  "accuracy_rate": 85.5,
+  "category_distribution": [
+    {
+      "detected_category__name": "可回收垃圾",
+      "count": 400
+    },
+    {
+      "detected_category__name": "厨余垃圾",
+      "count": 300
+    }
+  ]
 }
 ```
 
@@ -267,9 +349,11 @@
 **功能描述**: 获取指定用户的统计信息
 
 **路径参数**:
+
 - `user_id`: 用户ID
 
 **响应格式**:
+
 ```json
 {
   "total_detections": 100,
@@ -303,11 +387,13 @@
 **请求格式**: `multipart/form-data`
 
 **请求参数**:
+
 - `image` (必需): 图片文件
 - `confidence` (可选): 置信度阈值，默认0.5
 - `iou_threshold` (可选): IOU阈值，默认0.45
 
 **响应格式**:
+
 ```json
 {
   "success": true,
@@ -329,6 +415,7 @@
 ```
 
 **错误响应**:
+
 ```json
 {
   "error": "请上传图片文件"
@@ -344,12 +431,14 @@
 **请求格式**: `multipart/form-data`
 
 **请求参数**:
+
 - `video` (必需): 视频文件
 - `confidence` (可选): 置信度阈值，默认0.5
 - `iou_threshold` (可选): IOU阈值，默认0.45
 - `frame_skip` (可选): 跳帧数，默认5
 
 **响应格式**:
+
 ```json
 {
   "success": true,
@@ -389,6 +478,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
   "model_name": "YOLOv8n",
@@ -416,6 +506,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 [
   {
@@ -437,6 +528,7 @@
 **创建模型**: `POST /api/yolo/api/models/`
 
 **请求体**:
+
 ```json
 {
   "name": "新模型",
@@ -458,6 +550,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 [
   {
@@ -494,6 +587,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
   "total_detections": 1000,
@@ -527,6 +621,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
   "status": "success",
@@ -558,6 +653,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
   "status": "success",
@@ -580,6 +676,7 @@
 **更新配置**: `POST /api/websocket/detection/config/`
 
 **请求体**:
+
 ```json
 {
   "confidence_threshold": 0.6,
@@ -592,6 +689,7 @@
 ```
 
 **响应格式**:
+
 ```json
 {
   "status": "success",
@@ -616,6 +714,7 @@
 **请求参数**: 无
 
 **响应格式**:
+
 ```json
 {
   "status": "success",
@@ -651,9 +750,11 @@
 **功能描述**: 获取实时检测统计
 
 **请求参数**:
+
 - `days` (可选): 统计天数，默认7天
 
 **响应格式**:
+
 ```json
 {
   "status": "success",
@@ -703,11 +804,13 @@
 **功能描述**: 实时图像检测WebSocket连接
 
 **连接流程**:
+
 1. 建立WebSocket连接
 2. 发送图像帧数据
 3. 接收检测结果
 
 **发送消息格式**:
+
 ```json
 {
   "type": "image_frame",
@@ -721,6 +824,7 @@
 ```
 
 **接收消息格式**:
+
 ```json
 {
   "type": "detection_result",
@@ -742,6 +846,7 @@
 ```
 
 **错误消息格式**:
+
 ```json
 {
   "type": "error",
@@ -760,14 +865,17 @@
 **功能描述**: 摄像头视频流WebSocket连接
 
 **路径参数**:
+
 - `camera_id`: 摄像头ID
 
 **连接流程**:
+
 1. 建立WebSocket连接
 2. 接收视频流数据
 3. 发送控制命令
 
 **接收消息格式**:
+
 ```json
 {
   "type": "video_frame",
@@ -782,6 +890,7 @@
 ```
 
 **发送控制命令**:
+
 ```json
 {
   "type": "camera_control",
@@ -796,6 +905,7 @@
 ```
 
 **状态消息格式**:
+
 ```json
 {
   "type": "camera_status",
@@ -907,6 +1017,7 @@
 ### 6.1 认证方式
 
 系统支持以下认证方式：
+
 - Basic Authentication
 - 自定义CSRF豁免认证
 
@@ -1024,6 +1135,7 @@ curl -X GET "http://localhost:8000/api/websocket/detection/stats/?days=7" \
 ## 9. 更新日志
 
 ### v1.0.0 (2024-01-01)
+
 - 初始版本发布
 - 实现基础垃圾分类功能
 - 集成YOLO检测模型
@@ -1033,9 +1145,9 @@ curl -X GET "http://localhost:8000/api/websocket/detection/stats/?days=7" \
 
 ## 10. 联系信息
 
-- **项目地址**: https://github.com/your-repo/garbage-classification
-- **文档地址**: https://docs.your-domain.com/api
-- **技术支持**: support@your-domain.com
+- **项目地址**: <https://github.com/your-repo/garbage-classification>
+- **文档地址**: <https://docs.your-domain.com/api>
+- **技术支持**: <support@your-domain.com>
 
 ---
 

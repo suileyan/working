@@ -43,20 +43,20 @@ export interface UploadFileResponse {
 
 // 用户信息表单验证规则类型
 export interface UserInfoFormRules {
-  email: FormValidationRule[]
-  'user_info.phone': FormValidationRule[]
-  'user_info.gender': FormValidationRule[]
+  email: UserInfoFormValidationRule[]
+  'user_info.phone': UserInfoFormValidationRule[]
+  'user_info.gender': UserInfoFormValidationRule[]
 }
 
 // 修改密码表单验证规则类型
 export interface ChangePasswordFormRules {
-  old_password: FormValidationRule[]
-  new_password: FormValidationRule[]
-  reset_password: FormValidationRule[]
+  old_password: UserInfoFormValidationRule[]
+  new_password: UserInfoFormValidationRule[]
+  reset_password: UserInfoFormValidationRule[]
 }
 
 // 表单验证规则类型（从auth.ts复用）
-export interface FormValidationRule {
+export interface UserInfoFormValidationRule {
   required?: boolean
   message?: string
   trigger?: string | string[]
