@@ -365,8 +365,11 @@
             class="bg-blue-50 rounded-lg p-4">
             <h5 class="font-semibold mb-2">🔍 帧检测详情</h5>
             <div class="space-y-3 max-h-60 overflow-y-auto">
-              <div v-for="(frame, index) in selectedResult.frame_detections" :key="index" class="border-l-4 border-primary pl-3">
-                <div class="text-sm text-base-content/70 mb-1">帧 {{ frame.frame_index }} ({{ frame.timestamp.toFixed(2) }}s)</div>
+              <div v-for="(frame, index) in selectedResult.frame_detections" :key="index"
+                class="border-l-4 border-primary pl-3">
+                <div class="text-sm text-base-content/70 mb-1">帧 {{ frame.frame_index }} ({{ frame.timestamp.toFixed(2)
+                  }}s)
+                </div>
                 <div v-for="detection in frame.detections" :key="detection.id" class="text-sm mb-1">
                   <div class="flex justify-between items-center">
                     <span class="font-medium">{{ detection.class_name }}</span>
@@ -527,7 +530,7 @@ const isWebSocketConnected = ref(false)
 const isRealtimeDetecting = ref(false)
 const frameId = ref(0)
 const realtimeResults = ref<DetectionResultItem[]>([])
-const websocketUrl = "ws://192.168.124.3:8001/ws/rubbish_detection/"
+const websocketUrl = "ws://192.168.124.3:8001/ws/detection/"
 
 // WebSocket重连相关
 const reconnectAttempts = ref(0)
@@ -863,7 +866,7 @@ const convertApiResponseToResult = (response: any): DetectionResultItem => {
   // 处理res.json格式的数据
   let category = response.detected_category
   let confidence = 0
-  
+
   // 如果有frame_detections，从中提取分类和置信度信息
   if (response.frame_detections && response.frame_detections.length > 0) {
     const allDetections = response.frame_detections.flatMap((frame: any) => frame.detections)
@@ -1114,6 +1117,7 @@ const disconnectWebSocket = () => {
 // WebSocket消息处理
 const handleWebSocketMessage = (data: any) => {
   console.log('收到WebSocket消息:', data)
+
   switch (data.type) {
     case 'detection_result':
       handleRealtimeDetectionResult(data.data)
@@ -1209,7 +1213,8 @@ const sendImageFrameToWebSocket = (imageData: string) => {
     frame_id: message.data.frame_id,
     timestamp: message.data.timestamp,
     camera_id: message.data.camera_id,
-    image_length: message.data.image.length
+    image_length: message.data.image.length,
+    image: message.data.image
   })
 
   try {

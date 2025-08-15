@@ -64,8 +64,6 @@
               </select>
             </div>
 
-
-
             <!-- 清空历史 -->
             <button @click="clearHistory" class="btn btn-outline btn-error">
               <el-icon class="text-error">
@@ -116,7 +114,8 @@
             <div class="flex items-center justify-between">
               <!-- 检测结果信息 -->
               <div class="flex items-center gap-4">
-                <div class="rounded-full w-12 h-12 flex items-center justify-center shadow-sm bg-purple-100 text-purple-600">
+                <div
+                  class="rounded-full w-12 h-12 flex items-center justify-center shadow-sm bg-purple-100 text-purple-600">
                   <el-icon class="text-2xl">
                     <TrendCharts />
                   </el-icon>
@@ -196,7 +195,8 @@
           <div class="space-y-4">
             <!-- 基本信息 -->
             <div class="flex items-center gap-4">
-              <div class="rounded-full w-16 h-16 flex items-center justify-center shadow-sm bg-purple-100 text-purple-600">
+              <div
+                class="rounded-full w-16 h-16 flex items-center justify-center shadow-sm bg-purple-100 text-purple-600">
                 <el-icon class="text-3xl">
                   <TrendCharts />
                 </el-icon>
@@ -227,7 +227,7 @@
               <h5 class="font-semibold mb-2">📋 检测对象</h5>
               <div class="space-y-2">
                 <div v-for="(detection, index) in selectedRecord.detection_data.detections" :key="index"
-                     class="bg-white rounded p-2">
+                  class="bg-white rounded p-2">
                   <p class="text-sm font-medium">{{ detection.class_name }}</p>
                   <p class="text-xs text-base-content/60">置信度: {{ Math.round(detection.confidence * 100) }}%</p>
                   <p class="text-xs text-base-content/60">类别ID: {{ detection.class_id }}</p>
@@ -242,7 +242,8 @@
                 <p class="text-sm">• 原始文件: {{ selectedRecord.original_file }}</p>
                 <p class="text-sm">• 结果图片: {{ selectedRecord.result_image }}</p>
                 <p class="text-sm">• 用户反馈: {{ selectedRecord.user_feedback || '无' }}</p>
-                <p class="text-sm">• 是否正确: {{ selectedRecord.is_correct === null ? '未评价' : (selectedRecord.is_correct ? '正确' : '错误') }}</p>
+                <p class="text-sm">• 是否正确: {{ selectedRecord.is_correct === null ? '未评价' : (selectedRecord.is_correct ?
+                  '正确' : '错误') }}</p>
               </div>
             </div>
           </div>
@@ -261,7 +262,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Delete, View, Refresh, TrendCharts, Trophy, Calendar } from '@element-plus/icons-vue'
 import { getHistoryRecords, deleteHistoryRecord, clearAllHistoryRecords } from '@/api/common/history'
-import type { HistoryRecord as ApiHistoryRecord, HistoryListParams, HistoryListResponse } from '@/api/common/history'
+import type { HistoryRecord as ApiHistoryRecord, HistoryListParams } from '@/api/common/history'
 
 // 响应式数据
 const historyRecords = ref<ApiHistoryRecord[]>([])
@@ -273,8 +274,6 @@ const currentPage = ref(1)
 const itemsPerPage = 10
 const loading = ref(false)
 const error = ref<string | null>(null)
-
-
 
 // 辅助函数：从detection_data中获取分类
 const getDetectionCategory = (record: ApiHistoryRecord): string => {
@@ -375,8 +374,6 @@ const filteredHistory = computed(() => {
       return category === selectedCategory.value
     })
   }
-
-
 
   return filtered
 })

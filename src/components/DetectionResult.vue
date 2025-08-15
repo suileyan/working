@@ -66,12 +66,14 @@
       </div>
 
       <!-- 检测对象列表 -->
-      <div v-if="result.frame_detections && result.frame_detections.length > 0" class="bg-base-200 rounded-lg p-6 mb-6" v-motion :initial="{ opacity: 0, y: 30 }"
-        :enter="{ opacity: 1, y: 0, transition: { delay: 1000 } }">
+      <div v-if="result.frame_detections && result.frame_detections.length > 0" class="bg-base-200 rounded-lg p-6 mb-6"
+        v-motion :initial="{ opacity: 0, y: 30 }" :enter="{ opacity: 1, y: 0, transition: { delay: 1000 } }">
         <h4 class="text-lg font-semibold mb-4">检测对象</h4>
         <div class="space-y-3 max-h-40 overflow-y-auto">
-          <div v-for="(frame, index) in result.frame_detections.slice(0, 3)" :key="index" class="border-l-4 border-primary pl-3">
-            <div class="text-sm text-base-content/70">帧 {{ frame.frame_index }} ({{ frame.timestamp.toFixed(2) }}s)</div>
+          <div v-for="(frame, index) in result.frame_detections.slice(0, 3)" :key="index"
+            class="border-l-4 border-primary pl-3">
+            <div class="text-sm text-base-content/70">帧 {{ frame.frame_index }} ({{ frame.timestamp.toFixed(2) }}s)
+            </div>
             <div v-for="detection in frame.detections" :key="detection.id" class="flex justify-between items-center">
               <span class="font-medium">{{ detection.class_name }}</span>
               <span class="text-sm text-primary">{{ (detection.confidence * 100).toFixed(1) }}%</span>
