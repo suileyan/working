@@ -96,5 +96,8 @@ const serverConfig = {
 
   VITE_APP_VERSION: import.meta.env.VITE_APP_VERSION,
 
+  serverPath: import.meta.env.VITE_SERVER_PATH || '/api',
+
+  WEBSOCKET_PATH: import.meta.env.VITE_WEBSOCKET_PATH || 'ws://localhost:8000',
 }
 export default serverConfig

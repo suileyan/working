@@ -799,7 +799,7 @@
 
 #### 3.2.1 实时检测WebSocket
 
-**连接地址**: `ws://localhost:8000/ws/detection/`
+**连接地址**: `ws://localhost:8001/ws/detection/`
 
 **功能描述**: 实时图像检测WebSocket连接
 

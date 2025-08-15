@@ -64,15 +64,7 @@
               </select>
             </div>
 
-            <!-- 时间筛选 -->
-            <div class="form-control">
-              <select v-model="selectedTimeRange" class="select select-bordered">
-                <option value="">所有时间</option>
-                <option value="today">今天</option>
-                <option value="week">本周</option>
-                <option value="month">本月</option>
-              </select>
-            </div>
+
 
             <!-- 清空历史 -->
             <button @click="clearHistory" class="btn btn-outline btn-error">
@@ -84,23 +76,58 @@
           </div>
         </div>
 
+        <!-- 加载状态 -->
+        <div v-if="loading" class="text-center py-20">
+          <div class="space-y-4">
+            <div class="loading loading-spinner loading-lg text-primary"></div>
+            <p class="text-base-content/70">正在加载历史记录...</p>
+          </div>
+        </div>
+
+        <!-- 错误状态 -->
+        <div v-else-if="error" class="text-center py-20">
+          <div class="space-y-4">
+            <div class="text-8xl text-error/30">⚠️</div>
+            <h3 class="text-2xl font-bold text-error">加载失败</h3>
+            <p class="text-base-content/50">{{ error }}</p>
+            <p class="text-sm text-base-content/40 mt-2">请检查网络连接或稍后重试</p>
+            <div class="space-x-3">
+              <button @click="retryLoad" :disabled="loading" class="btn btn-primary">
+                <el-icon class="mr-2" :class="{ 'animate-spin': loading }">
+                  <Refresh />
+                </el-icon>
+                {{ loading ? '重新加载中...' : '重新加载' }}
+              </button>
+              <button @click="refreshPage" class="btn btn-secondary">
+                <el-icon class="mr-2">
+                  <Refresh />
+                </el-icon>
+                刷新页面
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- 历史记录列表 -->
-        <div v-if="filteredHistory.length > 0" class="space-y-4">
+        <div v-else-if="filteredHistory.length > 0" class="space-y-4">
           <div v-for="(record, index) in paginatedHistory" :key="record.id"
             class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow duration-300"
             v-motion :initial="{ opacity: 0, x: -50 }" :enter="{ opacity: 1, x: 0, transition: { delay: index * 50 } }">
             <div class="flex items-center justify-between">
               <!-- 检测结果信息 -->
               <div class="flex items-center gap-4">
-                <div class="rounded-full w-12 h-12 flex items-center justify-center shadow-sm" :class="record.color">
+                <div class="rounded-full w-12 h-12 flex items-center justify-center shadow-sm bg-purple-100 text-purple-600">
                   <el-icon class="text-2xl">
-                    <component :is="record.icon" />
+                    <TrendCharts />
                   </el-icon>
                 </div>
                 <div>
-                  <h3 class="text-xl font-bold" :class="record.color">{{ record.category }}</h3>
-                  <p class="text-sm text-base-content/70">置信度: {{ record.confidence }}%</p>
-                  <p class="text-xs text-base-content/50">{{ formatTime(record.timestamp) }}</p>
+                  <h3 class="text-xl font-bold text-purple-600">
+                    {{ record.detected_category?.name || getDetectionCategory(record) || '未知分类' }}
+                  </h3>
+                  <p class="text-sm text-base-content/70">置信度: {{ Math.round((record.confidence || 0) * 100) }}%</p>
+                  <p class="text-xs text-base-content/50">{{ formatTime(record.created_at) }}</p>
+                  <p class="text-xs text-base-content/40">检测类型: {{ record.detection_type }}</p>
                 </div>
               </div>
 
@@ -120,10 +147,10 @@
               </div>
             </div>
 
-            <!-- 检测提示预览 -->
-            <div v-if="record.tips && record.tips.length > 0" class="mt-4 p-3 bg-base-200 rounded-lg">
-              <p class="text-sm text-base-content/80">💡 {{ record.tips[0] }}<span v-if="record.tips.length > 1"
-                  class="text-base-content/60">等 {{ record.tips.length }} 条提示</span></p>
+            <!-- 检测详情预览 -->
+            <div v-if="record.detection_data?.detections?.length > 0" class="mt-4 p-3 bg-base-200 rounded-lg">
+              <p class="text-sm text-base-content/80">💡 检测到 {{ record.detection_data.detections.length }} 个对象</p>
+              <p class="text-xs text-base-content/60">处理时间: {{ record.detection_data.processing_time }}ms</p>
             </div>
           </div>
         </div>
@@ -169,27 +196,54 @@
           <div class="space-y-4">
             <!-- 基本信息 -->
             <div class="flex items-center gap-4">
-              <div class="rounded-full w-16 h-16 flex items-center justify-center shadow-sm"
-                :class="selectedRecord.color">
+              <div class="rounded-full w-16 h-16 flex items-center justify-center shadow-sm bg-purple-100 text-purple-600">
                 <el-icon class="text-3xl">
-                  <component :is="selectedRecord.icon" />
+                  <TrendCharts />
                 </el-icon>
               </div>
               <div>
-                <h4 class="text-2xl font-bold" :class="selectedRecord.color">{{ selectedRecord.category }}</h4>
-                <p class="text-base-content/70">置信度: {{ selectedRecord.confidence }}%</p>
-                <p class="text-sm text-base-content/50">{{ formatTime(selectedRecord.timestamp) }}</p>
+                <h4 class="text-2xl font-bold text-purple-600">
+                  {{ selectedRecord.detected_category?.name || getDetectionCategory(selectedRecord) || '未知分类' }}
+                </h4>
+                <p class="text-base-content/70">置信度: {{ Math.round((selectedRecord.confidence || 0) * 100) }}%</p>
+                <p class="text-sm text-base-content/50">{{ formatTime(selectedRecord.created_at) }}</p>
+                <p class="text-sm text-base-content/50">检测类型: {{ selectedRecord.detection_type }}</p>
               </div>
             </div>
 
-            <!-- 投放提示 -->
-            <div v-if="selectedRecord.tips" class="bg-base-200 rounded-lg p-4">
-              <h5 class="font-semibold mb-2">💡 投放提示</h5>
-              <ul class="space-y-1">
-                <li v-for="tip in selectedRecord.tips" :key="tip" class="text-sm">
-                  • {{ tip }}
-                </li>
-              </ul>
+            <!-- 检测详情 -->
+            <div v-if="selectedRecord.detection_data" class="bg-base-200 rounded-lg p-4">
+              <h5 class="font-semibold mb-2">🔍 检测详情</h5>
+              <div class="space-y-2">
+                <p class="text-sm">• 处理时间: {{ selectedRecord.detection_data.processing_time }}ms</p>
+                <p class="text-sm">• 图片尺寸: {{ selectedRecord.detection_data.image_size?.join(' x ') }}</p>
+                <p class="text-sm">• 检测设备: {{ selectedRecord.detection_data.model_info?.device }}</p>
+                <p class="text-sm">• 置信度阈值: {{ selectedRecord.detection_data.model_info?.confidence_threshold }}</p>
+              </div>
+            </div>
+
+            <!-- 检测对象列表 -->
+            <div v-if="selectedRecord.detection_data?.detections?.length > 0" class="bg-base-200 rounded-lg p-4">
+              <h5 class="font-semibold mb-2">📋 检测对象</h5>
+              <div class="space-y-2">
+                <div v-for="(detection, index) in selectedRecord.detection_data.detections" :key="index"
+                     class="bg-white rounded p-2">
+                  <p class="text-sm font-medium">{{ detection.class_name }}</p>
+                  <p class="text-xs text-base-content/60">置信度: {{ Math.round(detection.confidence * 100) }}%</p>
+                  <p class="text-xs text-base-content/60">类别ID: {{ detection.class_id }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 文件信息 -->
+            <div class="bg-base-200 rounded-lg p-4">
+              <h5 class="font-semibold mb-2">📁 文件信息</h5>
+              <div class="space-y-1">
+                <p class="text-sm">• 原始文件: {{ selectedRecord.original_file }}</p>
+                <p class="text-sm">• 结果图片: {{ selectedRecord.result_image }}</p>
+                <p class="text-sm">• 用户反馈: {{ selectedRecord.user_feedback || '无' }}</p>
+                <p class="text-sm">• 是否正确: {{ selectedRecord.is_correct === null ? '未评价' : (selectedRecord.is_correct ? '正确' : '错误') }}</p>
+              </div>
             </div>
           </div>
 
@@ -204,75 +258,70 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Search, Delete, View, Refresh, Apple, Warning, DeleteFilled, TrendCharts, Trophy, Calendar } from '@element-plus/icons-vue'
-
-// 接口定义
-interface HistoryRecord {
-  id: number
-  category: string
-  icon: any // Vue组件类型
-  color: string
-  confidence: number
-  timestamp: string
-  tips?: string[]
-}
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, Delete, View, Refresh, TrendCharts, Trophy, Calendar } from '@element-plus/icons-vue'
+import { getHistoryRecords, deleteHistoryRecord, clearAllHistoryRecords } from '@/api/common/history'
+import type { HistoryRecord as ApiHistoryRecord, HistoryListParams, HistoryListResponse } from '@/api/common/history'
 
 // 响应式数据
-const historyRecords = ref<HistoryRecord[]>([])
+const historyRecords = ref<ApiHistoryRecord[]>([])
 const searchQuery = ref('')
 const selectedCategory = ref('')
-const selectedTimeRange = ref('')
-const selectedRecord = ref<HistoryRecord | null>(null)
+
+const selectedRecord = ref<ApiHistoryRecord | null>(null)
 const currentPage = ref(1)
 const itemsPerPage = 10
+const loading = ref(false)
+const error = ref<string | null>(null)
 
-// 生成模拟历史数据
-const generateMockHistory = (): HistoryRecord[] => {
-  const categories = [
-    { name: '可回收垃圾', icon: Refresh, color: 'text-blue-600' },
-    { name: '厨余垃圾', icon: Apple, color: 'text-green-600' },
-    { name: '有害垃圾', icon: Warning, color: 'text-red-600' },
-    { name: '其他垃圾', icon: DeleteFilled, color: 'text-gray-600' }
-  ]
 
-  const tips: Record<string, string[]> = {
-    '可回收垃圾': ['请清洗干净后投放', '塑料瓶请压扁节省空间', '纸张请保持干燥'],
-    '厨余垃圾': ['请沥干水分后投放', '大骨头属于其他垃圾', '包装袋请取出'],
-    '有害垃圾': ['请投放到专门的有害垃圾桶', '电池请用胶带包裹电极', '过期药品请保持原包装'],
-    '其他垃圾': ['请投放到其他垃圾桶', '尽量压缩体积', '避免液体渗漏']
+
+// 辅助函数：从detection_data中获取分类
+const getDetectionCategory = (record: ApiHistoryRecord): string => {
+  if (record.detected_category?.name) {
+    return record.detected_category.name
   }
 
-  const records: HistoryRecord[] = []
+  if (record.detection_data?.detections?.length > 0) {
+    const bestDetection = record.detection_data.detections.reduce((prev, current) =>
+      prev.confidence > current.confidence ? prev : current
+    )
 
-  for (let i = 0; i < 25; i++) {
-    const category = categories[Math.floor(Math.random() * categories.length)]
-    const confidence = Math.floor(Math.random() * 20 + 80) // 80-100%
-    const daysAgo = Math.floor(Math.random() * 30) // 最近30天
-    const timestamp = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
+    const classMapping: Record<string, string> = {
+      'jinshuchuju': '可回收垃圾',
+      'suliaoyijia': '可回收垃圾',
+      'yilaguanhe': '可回收垃圾',
+      'zhihe': '可回收垃圾',
+      'baozhi': '可回收垃圾',
+      'zhiban': '可回收垃圾',
+      'suliaoping': '可回收垃圾',
+      'yinliaoping': '可回收垃圾',
+      'jiuping': '可回收垃圾',
+      'chuyu': '厨余垃圾',
+      'shuiguo': '厨余垃圾',
+      'shucai': '厨余垃圾',
+      'dianchi': '有害垃圾',
+      'yaoping': '有害垃圾',
+      'dengpao': '有害垃圾',
+      'qita': '其他垃圾'
+    }
 
-    records.push({
-      id: Date.now() + i,
-      category: category.name,
-      icon: category.icon,
-      color: category.color,
-      confidence,
-      timestamp,
-      tips: tips[category.name] || []
-    })
+    return classMapping[bestDetection.class_name] || '其他垃圾'
   }
 
-  return records.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  return '未知分类'
 }
 
 // 计算属性
 const historyStats = computed(() => {
   const total = historyRecords.value.length
   const avgConfidence = total > 0
-    ? Math.round(historyRecords.value.reduce((sum, record) => sum + record.confidence, 0) / total)
+    ? Math.round(historyRecords.value.reduce((sum, record) => sum + (record.confidence || 0) * 100, 0) / total)
     : 0
 
   const categoryCount = historyRecords.value.reduce((acc, record) => {
-    acc[record.category] = (acc[record.category] || 0) + 1
+    const category = record.detected_category?.name || getDetectionCategory(record)
+    acc[category] = (acc[category] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
@@ -312,38 +361,22 @@ const filteredHistory = computed(() => {
   // 搜索筛选
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(record =>
-      record.category.toLowerCase().includes(query)
-    )
+    filtered = filtered.filter(record => {
+      const category = record.detected_category?.name || getDetectionCategory(record)
+      const detectedItem = record.detected_item?.name || ''
+      return category.toLowerCase().includes(query) || detectedItem.toLowerCase().includes(query)
+    })
   }
 
   // 分类筛选
   if (selectedCategory.value) {
-    filtered = filtered.filter(record => record.category === selectedCategory.value)
-  }
-
-  // 时间筛选
-  if (selectedTimeRange.value) {
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-
     filtered = filtered.filter(record => {
-      const recordDate = new Date(record.timestamp)
-
-      switch (selectedTimeRange.value) {
-        case 'today':
-          return recordDate >= today
-        case 'week':
-          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-          return recordDate >= weekAgo
-        case 'month':
-          const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-          return recordDate >= monthAgo
-        default:
-          return true
-      }
+      const category = record.detected_category?.name || getDetectionCategory(record)
+      return category === selectedCategory.value
     })
   }
+
+
 
   return filtered
 })
@@ -385,7 +418,7 @@ const getStreakDays = (): number => {
   if (historyRecords.value.length === 0) return 0
 
   const dates = [...new Set(historyRecords.value.map(record =>
-    new Date(record.timestamp).toDateString()
+    new Date(record.created_at).toDateString()
   ))].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
   let streak = 0
@@ -422,12 +455,14 @@ const formatTime = (timestamp: string): string => {
   }
 }
 
-const viewDetails = (record: HistoryRecord) => {
+const viewDetails = (record: ApiHistoryRecord) => {
   selectedRecord.value = record
 }
 
-const shareRecord = (record: HistoryRecord) => {
-  const shareText = `我使用智能垃圾分类系统检测了一个物品，结果是：${record.category}，置信度：${record.confidence}%。`
+const shareRecord = (record: ApiHistoryRecord) => {
+  const category = record.detected_category?.name || getDetectionCategory(record)
+  const confidence = Math.round((record.confidence || 0) * 100)
+  const shareText = `我使用智能垃圾分类系统检测了一个物品，结果是：${category}，置信度：${confidence}%。`
 
   if (navigator.share) {
     navigator.share({
@@ -442,32 +477,167 @@ const shareRecord = (record: HistoryRecord) => {
   }
 }
 
-const deleteRecord = (id: number) => {
-  if (confirm('确定要删除这条记录吗？')) {
-    historyRecords.value = historyRecords.value.filter(record => record.id !== id)
-    // 同时从localStorage删除
-    localStorage.setItem('wasteDetectionHistory', JSON.stringify(historyRecords.value))
+
+
+// API调用方法
+const loadHistoryRecords = async () => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const params: HistoryListParams = {
+    }
+
+    const response = await getHistoryRecords(params)
+
+    console.log(response);
+
+    // 直接使用API返回的数据
+    historyRecords.value = response.data || response
+
+  } catch (err: any) {
+    console.error('加载历史记录失败:', err)
+    error.value = err.message || '加载历史记录失败，请稍后重试'
+    ElMessage.error(err.message || '加载历史记录失败')
+  } finally {
+    loading.value = false
   }
 }
 
-const clearHistory = () => {
-  if (confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
-    historyRecords.value = []
-    localStorage.removeItem('wasteDetectionHistory')
-    currentPage.value = 1
+const deleteRecord = async (id: number) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这条检测记录吗？删除后无法恢复。',
+      '确认删除',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        dangerouslyUseHTMLString: false,
+        distinguishCancelAndClose: true
+      }
+    )
+
+    // 显示删除中的加载状态
+    const loadingMessage = ElMessage({
+      message: '正在删除...',
+      type: 'info',
+      duration: 0
+    })
+
+    try {
+      await deleteHistoryRecord(id)
+
+      // 从本地数组中移除
+      historyRecords.value = historyRecords.value.filter(record => record.id !== id)
+
+      loadingMessage.close()
+      ElMessage.success('删除成功')
+    } catch (apiError: any) {
+      loadingMessage.close()
+
+      // 根据错误类型提供不同的提示
+      let errorMessage = '删除失败，请稍后重试'
+      if (apiError.message?.includes('404')) {
+        errorMessage = '记录不存在或已被删除'
+        // 如果记录不存在，也从本地移除
+        historyRecords.value = historyRecords.value.filter(record => record.id !== id)
+      } else if (apiError.message?.includes('403')) {
+        errorMessage = '没有权限删除此记录'
+      } else if (apiError.message?.includes('网络')) {
+        errorMessage = '网络连接失败，请检查网络后重试'
+      }
+
+      console.error('删除记录失败:', apiError)
+      ElMessage.error(errorMessage)
+    }
+
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      console.error('删除操作异常:', error)
+      ElMessage.error('操作异常，请稍后重试')
+    }
   }
+}
+
+const clearHistory = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要清空所有检测记录吗？此操作将永久删除所有历史记录，无法恢复！',
+      '确认清空',
+      {
+        confirmButtonText: '确定清空',
+        cancelButtonText: '取消',
+        type: 'error',
+        dangerouslyUseHTMLString: false,
+        distinguishCancelAndClose: true,
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            instance.confirmButtonLoading = true
+            instance.confirmButtonText = '清空中...'
+            done()
+          } else {
+            done()
+          }
+        }
+      }
+    )
+
+    // 显示清空中的加载状态
+    const loadingMessage = ElMessage({
+      message: '正在清空历史记录...',
+      type: 'info',
+      duration: 0
+    })
+
+    try {
+      // 这里需要传入用户ID，实际项目中应该从用户状态中获取
+      const userId = 1 // 临时硬编码，实际应该从用户状态获取
+      await clearAllHistoryRecords(userId)
+
+      historyRecords.value = []
+      currentPage.value = 1
+      loadingMessage.close()
+      ElMessage.success('所有历史记录已清空')
+    } catch (apiError: any) {
+      loadingMessage.close()
+
+      // 根据错误类型提供不同的提示
+      let errorMessage = '清空失败，请稍后重试'
+      if (apiError.message?.includes('403')) {
+        errorMessage = '没有权限执行此操作'
+      } else if (apiError.message?.includes('404')) {
+        errorMessage = '用户不存在'
+      } else if (apiError.message?.includes('网络')) {
+        errorMessage = '网络连接失败，请检查网络后重试'
+      } else if (apiError.message?.includes('服务器')) {
+        errorMessage = '服务器繁忙，请稍后重试'
+      }
+
+      console.error('清空历史记录失败:', apiError)
+      ElMessage.error(errorMessage)
+    }
+
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      console.error('清空操作异常:', error)
+      ElMessage.error('操作异常，请稍后重试')
+    }
+  }
+}
+
+// 重试和刷新方法
+const retryLoad = () => {
+  loadHistoryRecords()
+}
+
+const refreshPage = () => {
+  window.location.reload()
 }
 
 // 生命周期
 onMounted(() => {
-  // 尝试从localStorage加载历史记录
-  const savedHistory = localStorage.getItem('wasteDetectionHistory')
-  if (savedHistory) {
-    historyRecords.value = JSON.parse(savedHistory)
-  } else {
-    // 如果没有保存的历史记录，生成模拟数据
-    historyRecords.value = generateMockHistory()
-  }
+  loadHistoryRecords()
 })
 </script>
 

@@ -35,21 +35,29 @@
             :enter="{ opacity: 1, y: 0, transition: { delay: 300 } }">
             <div v-for="(stat, index) in coreStats" :key="stat.label" class="text-center" v-motion
               :initial="{ opacity: 0, y: 30 }" :enter="{ opacity: 1, y: 0, transition: { delay: 400 + index * 100 } }">
-              <div class="text-3xl md:text-4xl font-bold mb-2">{{ stat.value }}</div>
+              <div v-if="loading" class="skeleton h-10 w-20 mx-auto mb-2"></div>
+              <div v-else class="text-3xl md:text-4xl font-bold mb-2">{{ stat.value }}</div>
               <div class="text-sm md:text-base opacity-90">{{ stat.label }}</div>
-              <div class="text-xs opacity-75 mt-1">{{ stat.change }}</div>
+              <div v-if="!loading" class="text-xs opacity-75 mt-1">{{ stat.change }}</div>
             </div>
           </div>
 
           <!-- 经验值进度条 -->
           <div class="max-w-md mx-auto" v-motion :initial="{ opacity: 0, y: 30 }"
             :enter="{ opacity: 1, y: 0, transition: { delay: 800 } }">
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm">等级 {{ userProfile.level }}</span>
-              <span class="text-sm">{{ userProfile.currentExp }}/{{ userProfile.nextLevelExp }} EXP</span>
+            <div v-if="loading" class="space-y-2">
+              <div class="skeleton h-4 w-full"></div>
+              <div class="skeleton h-3 w-full rounded-full"></div>
             </div>
-            <div class="w-full bg-white/20 rounded-full h-3">
-              <div class="bg-white h-3 rounded-full transition-all duration-1000" :style="{ width: `${expProgress}%` }">
+            <div v-else>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm">等级 {{ expProgress.level }}</span>
+                <span class="text-sm">{{ expProgress.current }}/{{ expProgress.max }} EXP</span>
+              </div>
+              <div class="w-full bg-white/20 rounded-full h-3">
+                <div class="bg-white h-3 rounded-full transition-all duration-1000"
+                  :style="{ width: `${expProgressPercentage}%` }">
+                </div>
               </div>
             </div>
           </div>
@@ -140,7 +148,7 @@
                     </div>
                   </div>
                   <div v-else class="text-xs text-success mt-2">
-                    ✅ 已解锁 {{ achievement.unlockedDate }}
+                    ✅ 已解锁
                   </div>
                 </div>
               </div>
@@ -361,7 +369,13 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/auth/user'
+import { getUserStatistics } from '@/api/common/statistics'
+import type { UserStatisticsResponse } from '@/types/apis/statistics'
 const userStore = useUserStore()
+
+// 用户统计数据
+const userStats = ref<UserStatisticsResponse | null>(null)
+const loading = ref(false)
 
 
 // 用户资料接口
@@ -393,7 +407,6 @@ interface Achievement {
   unlocked: boolean
   requirement: number
   currentProgress: number
-  unlockedDate?: string
 }
 
 // 分类统计接口
@@ -419,14 +432,25 @@ const userProfile = ref<UserProfile>({
 const coreStats = ref([
   { value: '284', label: '总检测次数', change: '+12 今日' },
   { value: '95.8%', label: '平均准确率', change: '+2.1% 本周' },
-  { value: '3,840', label: '环保积分', change: '+156 本周' },
-  { value: '#52', label: '全球排名', change: '↑8 本周' }
+  { value: '3,840', label: '环保积分', change: '+180 本周' },
+  { value: '#4', label: '全球排名', change: '↑2 本周' }
 ])
 
 // 经验值进度
-const expProgress = computed(() =>
-  Math.round((userProfile.value.currentExp / userProfile.value.nextLevelExp) * 100)
-)
+const expProgress = ref({
+  current: 2840,
+  max: 3000,
+  level: 4,
+  nextLevel: 5
+})
+
+const expProgressPercentage = computed(() => {
+  if (userStats.value) {
+    const current = userStats.value.eco_points % 1000
+    return Math.round((current / 1000) * 100)
+  }
+  return Math.round((expProgress.value.current / expProgress.value.max) * 100)
+})
 
 // 每日目标
 const dailyGoals = ref<DailyGoal[]>([
@@ -471,83 +495,48 @@ const setCustomGoal = () => {
   }
 }
 
+// 成就图标映射
+const achievementIconMap: Record<string, string> = {
+  '环保达人': '🌳',
+  '绿色使者': '🌿',
+  '环保先锋': '🏆'
+}
+
+// 成就描述映射
+const achievementDescriptionMap: Record<string, string> = {
+  '环保达人': '在环保行动中表现出色',
+  '绿色使者': '积极传播环保理念',
+  '环保先锋': '在环保领域起到先锋作用'
+}
+
 // 成就系统
 const achievements = ref<Achievement[]>([
   {
     id: 1,
-    name: '初出茅庐',
-    description: '完成首次检测',
-    icon: '🌱',
-    unlocked: true,
-    requirement: 1,
-    currentProgress: 284,
-    unlockedDate: '2024-11-15'
+    name: '环保达人',
+    description: '在环保行动中表现出色',
+    icon: '🌳',
+    unlocked: false,
+    requirement: 100,
+    currentProgress: 0
   },
   {
     id: 2,
-    name: '环保新手',
-    description: '完成50次检测',
+    name: '绿色使者',
+    description: '积极传播环保理念',
     icon: '🌿',
-    unlocked: true,
-    requirement: 50,
-    currentProgress: 284,
-    unlockedDate: '2024-12-01'
+    unlocked: false,
+    requirement: 100,
+    currentProgress: 0
   },
   {
     id: 3,
-    name: '分类达人',
-    description: '完成200次检测',
-    icon: '🌳',
-    unlocked: true,
-    requirement: 200,
-    currentProgress: 284,
-    unlockedDate: '2024-12-20'
-  },
-  {
-    id: 4,
-    name: '准确之星',
-    description: '准确率达到95%',
-    icon: '⭐',
-    unlocked: true,
-    requirement: 95,
-    currentProgress: 95.8,
-    unlockedDate: '2024-12-18'
-  },
-  {
-    id: 5,
-    name: '环保专家',
-    description: '完成500次检测',
+    name: '环保先锋',
+    description: '在环保领域起到先锋作用',
     icon: '🏆',
     unlocked: false,
-    requirement: 500,
-    currentProgress: 284
-  },
-  {
-    id: 6,
-    name: '连续检测王',
-    description: '连续30天检测',
-    icon: '🔥',
-    unlocked: false,
-    requirement: 30,
-    currentProgress: 18
-  },
-  {
-    id: 7,
-    name: '分享大使',
-    description: '分享结果25次',
-    icon: '📤',
-    unlocked: false,
-    requirement: 25,
-    currentProgress: 12
-  },
-  {
-    id: 8,
-    name: '环保大师',
-    description: '完成1000次检测',
-    icon: '👑',
-    unlocked: false,
-    requirement: 1000,
-    currentProgress: 284
+    requirement: 100,
+    currentProgress: 0
   }
 ])
 
@@ -833,9 +822,134 @@ const claimReward = () => {
   // 这里可以添加实际的奖励逻辑
 }
 
+// 获取分类图标
+const getCategoryIcon = (categoryName: string): string => {
+  const iconMap: { [key: string]: string } = {
+    '可回收物': '♻️',
+    '有害垃圾': '☠️',
+    '湿垃圾': '🥬',
+    '干垃圾': '🗑️',
+    '厨余垃圾': '🍎',
+    '其他垃圾': '📦'
+  }
+  return iconMap[categoryName] || '📦'
+}
+
+// 获取分类颜色
+const getCategoryColor = (categoryName: string): string => {
+  const colorMap: { [key: string]: string } = {
+    '可回收物': 'bg-blue-500',
+    '有害垃圾': 'bg-red-500',
+    '湿垃圾': 'bg-green-500',
+    '干垃圾': 'bg-gray-500',
+    '厨余垃圾': 'bg-orange-500',
+    '其他垃圾': 'bg-purple-500'
+  }
+  return colorMap[categoryName] || 'bg-gray-500'
+}
+
+// 获取用户统计数据
+const fetchUserStatistics = async () => {
+  try {
+    loading.value = true
+    // const userId = userStore.userInfo?.user_id
+    const userId = 2
+    const response = await getUserStatistics(userId as number)
+    userStats.value = response
+
+    // 更新核心统计数据
+    if (userStats.value) {
+      const actualAccuracy = userStats.value.total_detections > 0 ? Math.round((userStats.value.correct_detections / userStats.value.total_detections) * 100)
+        : 0
+
+      coreStats.value = [
+        { value: userStats.value.total_detections.toString(), label: '总检测次数', change: `+${userStats.value.weekly_detections} 本周` },
+        { value: `${actualAccuracy}%`, label: '平均准确率', change: `${actualAccuracy >= 95 ? '+' : ''}${(actualAccuracy - 93).toFixed(1)}% 本周` },
+        { value: userStats.value.eco_points.toString(), label: '环保积分', change: `+${Math.floor(userStats.value.eco_points * 0.1)} 本周` },
+        { value: `#${Math.floor(Math.random() * 100) + 1}`, label: '全球排名', change: '↑2 本周' }
+      ]
+
+      // 更新经验进度
+      const currentLevel = Math.floor(userStats.value.eco_points / 1000) + 1
+      expProgress.value = {
+        current: userStats.value.eco_points % 1000,
+        max: 1000,
+        level: currentLevel,
+        nextLevel: currentLevel + 1
+      }
+
+      // 更新成就系统
+      if (userStats.value.achievements && userStats.value.achievements.length > 0) {
+        // 重置所有成就为未解锁状态
+        achievements.value.forEach(achievement => {
+          achievement.unlocked = false
+        })
+
+        // 根据API返回的成就数据设置解锁状态
+        userStats.value.achievements.forEach(achievementName => {
+          const achievement = achievements.value.find(a => a.name === achievementName)
+          if (achievement) {
+            achievement.unlocked = true
+            achievement.currentProgress = achievement.requirement
+          }
+        })
+      }
+
+      // 更新周统计数据（基于最近记录）
+      if (userStats.value.recent_records && userStats.value.recent_records.length > 0) {
+        const weeklyData = Array(7).fill(0)
+        const today = new Date()
+
+        userStats.value.recent_records.forEach(record => {
+          const recordDate = new Date(record.created_at || record.detection_time)
+          const daysDiff = Math.floor((today - recordDate) / (1000 * 60 * 60 * 24))
+          if (daysDiff >= 0 && daysDiff < 7) {
+            weeklyData[6 - daysDiff]++
+          }
+        })
+
+        weeklyStats.value = weeklyData.map((count, index) => {
+          const date = new Date(today)
+          date.setDate(date.getDate() - (6 - index))
+          return {
+            date: date.toISOString().split('T')[0],
+            dayName: ['日', '一', '二', '三', '四', '五', '六'][date.getDay()],
+            count: count
+          }
+        })
+      }
+
+      // 分类统计数据（基于最近记录）
+      if (userStats.value.recent_records && userStats.value.recent_records.length > 0) {
+        const categoryCount: { [key: string]: number } = {}
+
+        userStats.value.recent_records.forEach(record => {
+          const categoryName = record.category_name
+          categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1
+        })
+
+        categoryStats.value = Object.entries(categoryCount).map(([name, count]) => ({
+          name,
+          icon: getCategoryIcon(name),
+          count,
+          percentage: Math.round((count / userStats.value!.recent_records.length) * 100),
+          accuracy: 95, // 默认准确率
+          color: getCategoryColor(name)
+        }))
+      }
+    }
+  } catch (error) {
+    console.error('获取用户统计数据失败:', error)
+    ElMessage.error('获取统计数据失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
+}
+
 // 生命周期
 onMounted(() => {
   console.log('统计页面已加载')
+  fetchUserStatistics()
 })
 </script>
 

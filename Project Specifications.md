@@ -486,6 +486,7 @@ docs: 更新API文档
 1. 使用原型图生成页面时，将原型图的icon 优先替换 elementPlusIcon 或者再 components>icon 创建组件，不能使用 emoji
 2. 页面对接口时，如果后续接口参数发生更新，你同样也需要自己去查找定义类型接口，更新对应的参数类型，防止编辑器问题提示
 3. 管理端ui风格需要与 pages>admin>dashboard 一致,客户端ui风格需要与 pages>knowledge 也可以参考 pages>stats
+4. public>res.json 这文件通常是为了给ai看响应体类型，而不是数据通过这个文件来获取，数据是通过接口来获取的，方便ai查看
 
 ## 🚀 最佳实践（重要）
 

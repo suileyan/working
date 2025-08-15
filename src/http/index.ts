@@ -120,3 +120,5 @@ serviceAxios.interceptors.response.use(
   },
 )
 export default serviceAxios
+
+export { serverConfig }

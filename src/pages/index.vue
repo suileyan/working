@@ -106,10 +106,12 @@
                 </el-icon>
               </div>
               <h3 class="card-title justify-center text-lg mb-2">{{ category.name }}</h3>
-              <div class="text-xs space-y-1">
-                <div v-for="example in category.examples.slice(0, 3)" :key="example"
-                  class="badge badge-primary badge-outline badge-xs">
-                  {{ example }}
+              <div class="text-center space-y-2">
+                <div class="text-2xl font-bold" :class="category.color">
+                  {{ category.count?.toLocaleString() || '0' }}
+                </div>
+                <div class="text-xs opacity-70">
+                  检测数量
                 </div>
               </div>
             </div>
@@ -141,7 +143,7 @@
           <router-link to="/knowledge" class="link link-hover text-green-200">分类指南</router-link>
           <router-link to="/detection" class="link link-hover text-green-200">智能检测</router-link>
           <router-link to="/history" class="link link-hover text-green-200">历史记录</router-link>
-          <router-link to="/statistics" class="link link-hover text-green-200">统计信息</router-link>
+          <router-link to="/stats" class="link link-hover text-green-200">统计信息</router-link>
         </div>
       </div>
       <div>
@@ -152,9 +154,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Camera, VideoCamera, Picture, Grape, Apple, Warning, DeleteFilled } from '@element-plus/icons-vue'
 import router from '@/router'
+import { getStatisticsOverview } from '@/api/common/statistics'
+import type { StatisticsOverviewResponse, CategoryDistribution } from '@/types/factory'
 
 interface Button {
   text: string
@@ -244,29 +248,32 @@ const statsSection: { stats: Stat[] } = {
     {
       id: 2,
       animatedValue: ref(0),
-      targetValue: 3,
-      suffix: '种',
-      title: '检测方式',
+      targetValue: 0,
+      suffix: '',
+      title: '总检测次数',
       delay: 400
     },
     {
       id: 3,
       animatedValue: ref(0),
-      targetValue: 4,
-      suffix: '大类',
-      title: '垃圾分类',
+      targetValue: 0,
+      suffix: '',
+      title: '注册用户',
       delay: 600
     },
     {
       id: 4,
       animatedValue: ref(0),
-      targetValue: 1234,
-      suffix: '+',
-      title: '用户数量',
+      targetValue: 4,
+      suffix: '大类',
+      title: '垃圾分类',
       delay: 800
     }
   ]
 }
+
+// 统计数据
+const categoryStats = ref<CategoryDistribution[]>([])
 
 // 垃圾分类数据
 interface WasteCategory {
@@ -276,13 +283,15 @@ interface WasteCategory {
   description: string
   examples: string[]
   color?: string
+  count?: number
 }
 
-const wasteCategories: WasteCategory[] = [
+// 基础垃圾分类配置
+const baseCategoryConfig = [
   {
     id: 1,
     name: '可回收垃圾',
-    // icon: Recycle,
+    icon: Picture,
     color: 'text-blue-600',
     examples: ['塑料瓶', '纸张纸箱', '金属罐', '玻璃瓶', '旧衣物'],
     description: ''
@@ -313,35 +322,128 @@ const wasteCategories: WasteCategory[] = [
   }
 ]
 
-// 数字动画函数
-const animateNumber = (target: { value: number }, finalValue: number, duration: number = 2000): void => {
-  const startTime = Date.now()
-  const startValue = 0
+// 计算属性：根据统计数据生成垃圾分类信息
+const wasteCategories = computed(() => {
+  if (!categoryStats.value || categoryStats.value.length === 0) {
+    return baseCategoryConfig.map(config => ({ ...config, count: 0 }))
+  }
 
-  const updateNumber = (): void => {
-    const currentTime = Date.now()
-    const elapsed = currentTime - startTime
+  // 规范化后端分类名称为页面四大类
+  const normalizeCategory = (name: string) => {
+    if (!name) return ''
+    if (name.includes('可回收')) return '可回收垃圾'
+    if (name.includes('厨余') || name.includes('湿垃圾')) return '厨余垃圾'
+    if (name.includes('有害')) return '有害垃圾'
+    if (name.includes('其他') || name.includes('干垃圾')) return '其他垃圾'
+    // 默认归到其他垃圾，避免未匹配造成丢失
+    return '其他垃圾'
+  }
+
+  // 汇总后端返回的分类计数
+  const totals: Record<string, number> = {
+    '可回收垃圾': 0,
+    '厨余垃圾': 0,
+    '有害垃圾': 0,
+    '其他垃圾': 0,
+  }
+
+  categoryStats.value.forEach(item => {
+    const rawName = (item as any).detected_category__name || (item as any).category_name || ''
+    const key = normalizeCategory(String(rawName))
+    const cnt = Number((item as any).count) || 0
+    if (key && typeof totals[key] === 'number') {
+      totals[key] += cnt
+    }
+  })
+
+  return baseCategoryConfig.map(config => ({
+    ...config,
+    count: totals[config.name] || 0,
+  }))
+})
+
+// 获取统计数据
+const fetchStatistics = async () => {
+  try {
+    const response = await getStatisticsOverview()
+
+    // 检查响应数据结构
+    let data: StatisticsOverviewResponse
+    if (response && typeof response === 'object') {
+      // 如果response直接包含数据字段
+      if ('accuracy_rate' in response) {
+        data = response as StatisticsOverviewResponse
+      }
+      // 如果response有data字段
+      else if (response.data && typeof response.data === 'object') {
+        data = response.data as StatisticsOverviewResponse
+      }
+      // 如果都没有，使用默认值
+      else {
+        throw new Error('响应数据结构不正确')
+      }
+    } else {
+      throw new Error('响应为空或格式错误')
+    }
+
+    // 验证必要字段是否存在
+    if (typeof data.accuracy_rate === 'undefined' ||
+      typeof data.total_detections === 'undefined' ||
+      typeof data.total_users === 'undefined') {
+      throw new Error('响应数据缺少必要字段')
+    }
+
+    // 更新统计数据
+    statsSection.stats[0].targetValue = data.accuracy_rate || 0
+    statsSection.stats[1].targetValue = data.total_detections || 0
+    statsSection.stats[2].targetValue = data.total_users || 0
+
+    // 保存分类分布数据
+    categoryStats.value = data.category_distribution || []
+
+    // 启动动画
+    statsSection.stats.forEach(stat => {
+      animateValue(stat)
+    })
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+    // 使用默认数据启动动画
+    statsSection.stats.forEach(stat => {
+      animateValue(stat)
+    })
+  }
+}
+
+// 动画函数
+const animateValue = (stat: Stat) => {
+  const start = 0
+  const end = stat.targetValue
+  const duration = 2000
+  const startTime = Date.now()
+
+  const animate = () => {
+    const elapsed = Date.now() - startTime
     const progress = Math.min(elapsed / duration, 1)
 
     // 使用缓动函数
     const easeOutQuart = 1 - Math.pow(1 - progress, 4)
-    target.value = Math.floor(startValue + (finalValue - startValue) * easeOutQuart)
+    const current = start + (end - start) * easeOutQuart
+
+    stat.animatedValue.value = Math.round(current * 10) / 10
 
     if (progress < 1) {
-      requestAnimationFrame(updateNumber)
+      requestAnimationFrame(animate)
     }
   }
 
-  requestAnimationFrame(updateNumber)
+  setTimeout(() => {
+    animate()
+  }, stat.delay)
 }
 
 onMounted(() => {
-  // 延迟启动数字动画
-  setTimeout(() => {
-    statsSection.stats.forEach(stat => {
-      animateNumber(stat.animatedValue, stat.targetValue)
-    })
-  }, 1000)
+  // 获取统计数据并启动动画
+  fetchStatistics()
 })
 </script>
 

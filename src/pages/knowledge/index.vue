@@ -23,7 +23,13 @@
       <el-tabs v-model="activeTab" type="border-card" class="rounded-xl overflow-hidden">
         <!-- 分类指南 -->
         <el-tab-pane label="分类指南" name="guide">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-if="loading" class="flex justify-center items-center py-20">
+            <el-icon class="is-loading text-2xl text-gray-400">
+              <Loading />
+            </el-icon>
+            <span class="ml-2 text-gray-500">加载中...</span>
+          </div>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <article v-for="cat in categories" :key="cat.key"
               class="rounded-xl border border-gray-100/60 bg-white/80 backdrop-blur p-5 shadow-sm hover:shadow-md transition-shadow">
               <div class="flex items-center gap-4">
@@ -110,7 +116,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import {
   Collection,
   Refresh,
@@ -124,7 +131,9 @@ import {
   GobletSquareFull,
   MagicStick,
   Document,
+  Loading,
 } from '@element-plus/icons-vue'
+import { getCategories, type CategoryResponse } from '@/api/common/categories'
 
 const activeTab = ref<'guide' | 'tips' | 'policy'>('guide')
 
@@ -138,44 +147,91 @@ type Category = {
   color: string // bg/text color classes for the icon circle
 }
 
-const categories: Category[] = [
-  {
-    key: 'recyclable',
-    title: '可回收垃圾',
-    definition: '可以再生循环的垃圾',
-    items: ['塑料瓶/塑料袋', '纸张/纸箱', '金属罐/易拉罐', '玻璃瓶', '旧衣物/鞋子'],
-    tip: '投放前请清洗干净，压扁节省空间，分类投放至蓝色回收桶',
-    icon: Refresh,
-    color: 'bg-blue-100 text-blue-600',
-  },
-  {
-    key: 'kitchen',
-    title: '厨余垃圾',
-    definition: '易腐烂的生物质废料',
-    items: ['剩菜剩饭', '蔬菜水果皮', '肉骨头/鱼刺', '蛋壳/茶叶渣', '过期食品'],
-    tip: '沥干水分后投放，避免渗漏与异味，可使用可降解垃圾袋',
-    icon: TakeawayBox,
-    color: 'bg-green-100 text-green-600',
-  },
-  {
-    key: 'hazardous',
-    title: '有害垃圾',
-    definition: '对环境有害的垃圾，需要特殊处理',
-    items: ['废电池/充电宝', '废灯管/节能灯', '过期药品', '油漆/农药', '温度计/血压计'],
-    tip: '请密封后投放至红色有害垃圾箱，切勿与其他垃圾混投',
-    icon: WarningFilled,
-    color: 'bg-red-100 text-red-600',
-  },
-  {
-    key: 'other',
-    title: '其他垃圾',
-    definition: '除上述之外的垃圾',
-    items: ['烟蒂/烟灰', '污染纸张', '破碎陶瓷', '猫砂/尿不湿', '一次性餐具'],
-    tip: '请尽量减量化，密封投放，统一焚烧或卫生填埋处理',
-    icon: DeleteFilled,
-    color: 'bg-gray-100 text-gray-600',
-  },
-]
+// 响应式的垃圾分类数据
+const categories = ref<Category[]>([])
+const loading = ref(false)
+
+// 图标映射
+const iconMap: Record<string, any> = {
+  recyclable: Refresh,
+  kitchen: TakeawayBox,
+  hazardous: WarningFilled,
+  other: DeleteFilled
+}
+
+// 颜色映射
+const colorMap: Record<string, string> = {
+  recyclable: 'bg-blue-100 text-blue-600',
+  kitchen: 'bg-green-100 text-green-600',
+  hazardous: 'bg-red-100 text-red-600',
+  other: 'bg-gray-100 text-gray-600'
+}
+
+// 将API响应转换为组件需要的格式
+const convertApiResponseToCategory = (apiData: CategoryResponse): Category => {
+  return {
+    key: apiData.category_type,
+    title: apiData.name,
+    definition: apiData.description,
+    items: [], // API响应中没有items字段，可能需要额外的接口或在后端添加
+    tip: apiData.disposal_method,
+    icon: iconMap[apiData.category_type] || DeleteFilled,
+    color: colorMap[apiData.category_type] || 'bg-gray-100 text-gray-600'
+  }
+}
+
+// 加载垃圾分类数据
+const loadCategories = async () => {
+  try {
+    loading.value = true
+    const response = await getCategories()
+    categories.value = response.map(convertApiResponseToCategory)
+  } catch (error) {
+    console.error('加载垃圾分类数据失败:', error)
+    ElMessage.error('加载垃圾分类数据失败，请稍后重试')
+    // 如果API失败，使用默认数据
+    categories.value = [
+      {
+        key: 'recyclable',
+        title: '可回收垃圾',
+        definition: '可以再生循环的垃圾',
+        items: ['塑料瓶/塑料袋', '纸张/纸箱', '金属罐/易拉罐', '玻璃瓶', '旧衣物/鞋子'],
+        tip: '投放前请清洗干净，压扁节省空间，分类投放至蓝色回收桶',
+        icon: Refresh,
+        color: 'bg-blue-100 text-blue-600',
+      },
+      {
+        key: 'kitchen',
+        title: '厨余垃圾',
+        definition: '易腐烂的生物质废料',
+        items: ['剩菜剩饭', '蔬菜水果皮', '肉骨头/鱼刺', '蛋壳/茶叶渣', '过期食品'],
+        tip: '沥干水分后投放，避免渗漏与异味，可使用可降解垃圾袋',
+        icon: TakeawayBox,
+        color: 'bg-green-100 text-green-600',
+      },
+      {
+        key: 'hazardous',
+        title: '有害垃圾',
+        definition: '对环境有害的垃圾，需要特殊处理',
+        items: ['废电池/充电宝', '废灯管/节能灯', '过期药品', '油漆/农药', '温度计/血压计'],
+        tip: '请密封后投放至红色有害垃圾箱，切勿与其他垃圾混投',
+        icon: WarningFilled,
+        color: 'bg-red-100 text-red-600',
+      },
+      {
+        key: 'other',
+        title: '其他垃圾',
+        definition: '除上述之外的垃圾',
+        items: ['烟蒂/烟灰', '污染纸张', '破碎陶瓷', '猫砂/尿不湿', '一次性餐具'],
+        tip: '请尽量减量化，密封投放，统一焚烧或卫生填埋处理',
+        icon: DeleteFilled,
+        color: 'bg-gray-100 text-gray-600',
+      },
+    ]
+  } finally {
+    loading.value = false
+  }
+}
 
 type EcoTip = { title: string; desc: string; icon: any }
 
@@ -226,6 +282,11 @@ const policies: Policy[] = [
     desc: '从源头减量、分类投放与资源化利用等方面提出要求，完善固体废物污染防治制度体系。',
   },
 ]
+
+// 生命周期
+onMounted(() => {
+  loadCategories()
+})
 </script>
 
 <style scoped>
