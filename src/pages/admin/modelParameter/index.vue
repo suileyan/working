@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import { Motion } from "motion-v";
 import { ref, onMounted ,computed} from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, DataAnalysis, Picture, VideoCamera, Timer } from '@element-plus/icons-vue';
 import {
   getYoloModelInfo,
   getYoloModels,
   getYoloDetectionTasks,
-  getYoloDetectionStatistics
+  getYoloDetectionStatistics,
+  createYoloModel,
+  updateYoloModel,
+  deleteYoloModel
 } from '@/api/admin/hzsystem_rubbish';
 import type {
   YoloModelInfo,
   YoloModel,
   YoloDetectionTask,
-  YoloDetectionStatistics
+  YoloDetectionStatistics,
+  CreateYoloModelRequest
 } from '@/types/apis/hzsystem_rubbish_T';
 
 // 响应式数据
@@ -31,6 +36,52 @@ const total = ref(0);
 const modelCurrentPage = ref(1);
 const modelPageSize = ref(5);
 const modelTotal = ref(0);
+
+// 对话框状态
+const createDialogVisible = ref(false);
+const editDialogVisible = ref(false);
+const currentEditModel = ref<YoloModel | null>(null);
+
+// 表单引用
+const createFormRef = ref();
+const editFormRef = ref();
+
+// 表单数据
+const modelForm = ref<CreateYoloModelRequest>({
+  name: '',
+  model_path: '',
+  confidence_threshold: 0.5,
+  iou_threshold: 0.45,
+  max_detections: 1000,
+  input_size: 640,
+  is_active: true
+});
+
+// 表单验证规则
+const modelFormRules = {
+  name: [
+    { required: true, message: '请输入模型名称', trigger: 'blur' }
+  ],
+  model_path: [
+    { required: true, message: '请输入模型路径', trigger: 'blur' }
+  ],
+  confidence_threshold: [
+    { required: true, message: '请输入置信度阈值', trigger: 'blur' },
+    { type: 'number', min: 0, max: 1, message: '置信度阈值必须在0-1之间', trigger: 'blur' }
+  ],
+  iou_threshold: [
+    { required: true, message: '请输入IOU阈值', trigger: 'blur' },
+    { type: 'number', min: 0, max: 1, message: 'IOU阈值必须在0-1之间', trigger: 'blur' }
+  ],
+  max_detections: [
+    { required: true, message: '请输入最大检测数', trigger: 'blur' },
+    { type: 'number', min: 1, message: '最大检测数必须大于0', trigger: 'blur' }
+  ],
+  input_size: [
+    { required: true, message: '请输入输入尺寸', trigger: 'blur' },
+    { type: 'number', min: 1, message: '输入尺寸必须大于0', trigger: 'blur' }
+  ]
+};
 
 // 计算属性：当前页显示的任务
 const paginatedTasks = computed(() => {
@@ -121,6 +172,112 @@ const refreshData = async () => {
   }
 };
 
+// 重置表单
+const resetForm = () => {
+  modelForm.value = {
+    name: '',
+    model_path: '',
+    confidence_threshold: 0.5,
+    iou_threshold: 0.45,
+    max_detections: 1000,
+    input_size: 640,
+    is_active: true
+  };
+};
+
+// 打开创建对话框
+const openCreateDialog = () => {
+  resetForm();
+  createDialogVisible.value = true;
+};
+
+// 打开编辑对话框
+const openEditDialog = (model: YoloModel) => {
+  currentEditModel.value = model;
+  modelForm.value = {
+    name: model.name,
+    model_path: model.model_path,
+    confidence_threshold: model.confidence_threshold,
+    iou_threshold: model.iou_threshold,
+    max_detections: model.max_detections,
+    input_size: model.input_size,
+    is_active: model.is_active
+  };
+  editDialogVisible.value = true;
+};
+
+// 创建模型
+const handleCreateModel = async () => {
+  if (!createFormRef.value) return;
+  
+  try {
+    await createFormRef.value.validate();
+    await createYoloModel(modelForm.value);
+    ElMessage.success('模型创建成功');
+    createDialogVisible.value = false;
+    await fetchModels();
+  } catch (error) {
+    if (error !== false) {
+      ElMessage.error('模型创建失败');
+      console.error('创建模型失败:', error);
+    }
+  }
+};
+
+// 更新模型
+const handleUpdateModel = async () => {
+  if (!currentEditModel.value || !editFormRef.value) return;
+  
+  try {
+    await editFormRef.value.validate();
+    await updateYoloModel(currentEditModel.value.id, modelForm.value);
+    ElMessage.success('模型更新成功');
+    editDialogVisible.value = false;
+    await fetchModels();
+  } catch (error) {
+    if (error !== false) {
+      ElMessage.error('模型更新失败');
+      console.error('更新模型失败:', error);
+    }
+  }
+};
+
+// 删除模型
+const handleDeleteModel = async (model: YoloModel) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除模型 "${model.name}" 吗？此操作不可恢复。`,
+      '确认删除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
+    
+    await deleteYoloModel(model.id);
+    ElMessage.success('模型删除成功');
+    await fetchModels();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('模型删除失败');
+      console.error('删除模型失败:', error);
+    }
+  }
+};
+
+// 关闭对话框
+const closeCreateDialog = () => {
+  createDialogVisible.value = false;
+  resetForm();
+};
+
+const closeEditDialog = () => {
+  editDialogVisible.value = false;
+  currentEditModel.value = null;
+  resetForm();
+};
+
 
 
 
@@ -187,6 +344,10 @@ onMounted(() => {
               :transition="{ duration: 0.3, delay: 0.5 }"
             >
               <div class="flex gap-2">
+                 <el-button type="primary" size="small" @click="openCreateDialog">
+                   <el-icon><Plus /></el-icon>
+                   创建模型
+                 </el-button>
                  <el-button type="default" size="small" @click="refreshData" :loading="loading">
                    <el-icon><Refresh /></el-icon>
                    刷新数据
@@ -351,27 +512,27 @@ onMounted(() => {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">模型名称</p>
-            <p class="font-medium">{{ modelInfo.model_name }}</p>
+            <p class="font-medium">{{ modelInfo?.model_name || '未知' }}</p>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">模型大小</p>
-            <p class="font-medium">{{ modelInfo.model_size }}</p>
+            <p class="font-medium">{{ modelInfo?.model_size || '未知' }}</p>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">输入尺寸</p>
-            <p class="font-medium">{{ modelInfo.input_size.join(' × ') }}</p>
+            <p class="font-medium">{{ modelInfo?.input_size?.join(' × ') || '未知' }}</p>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">类别数量</p>
-            <p class="font-medium">{{ modelInfo.num_classes }}</p>
+            <p class="font-medium">{{ modelInfo?.num_classes || 0 }}</p>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">置信度阈值</p>
-            <p class="font-medium">{{ modelInfo.confidence_threshold }}</p>
+            <p class="font-medium">{{ modelInfo?.confidence_threshold || 0 }}</p>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">设备</p>
-            <p class="font-medium">{{ modelInfo.device }}</p>
+            <p class="font-medium">{{ modelInfo?.device || '未知' }}</p>
           </div>
         </div>
       </el-card>
@@ -414,6 +575,20 @@ onMounted(() => {
             <el-table-column prop="created_at" label="创建时间" min-width="180">
               <template #default="{ row }">
                 {{ new Date(row.created_at).toLocaleString() }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" min-width="180" fixed="right">
+              <template #default="{ row }">
+                <div class="flex gap-2">
+                  <el-button type="primary" size="small" @click="openEditDialog(row)">
+                    <el-icon><Edit /></el-icon>
+                    编辑
+                  </el-button>
+                  <el-button type="danger" size="small" @click="handleDeleteModel(row)">
+                    <el-icon><Delete /></el-icon>
+                    删除
+                  </el-button>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -482,6 +657,139 @@ onMounted(() => {
       </Motion>
     </div>
 
+    <!-- 创建模型对话框 -->
+    <el-dialog
+      v-model="createDialogVisible"
+      title="创建模型"
+      width="600px"
+      @close="closeCreateDialog"
+    >
+      <el-form
+        ref="createFormRef"
+        :model="modelForm"
+        :rules="modelFormRules"
+        label-width="120px"
+      >
+        <el-form-item label="模型名称" prop="name">
+          <el-input v-model="modelForm.name" placeholder="请输入模型名称" />
+        </el-form-item>
+        <el-form-item label="模型路径" prop="model_path">
+          <el-input v-model="modelForm.model_path" placeholder="请输入模型文件路径" />
+        </el-form-item>
+        <el-form-item label="置信度阈值" prop="confidence_threshold">
+          <el-input-number
+            v-model="modelForm.confidence_threshold"
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :precision="2"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="IOU阈值" prop="iou_threshold">
+          <el-input-number
+            v-model="modelForm.iou_threshold"
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :precision="2"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="最大检测数" prop="max_detections">
+          <el-input-number
+            v-model="modelForm.max_detections"
+            :min="1"
+            :step="1"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="输入尺寸" prop="input_size">
+          <el-input-number
+            v-model="modelForm.input_size"
+            :min="1"
+            :step="1"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="是否激活">
+          <el-switch v-model="modelForm.is_active" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="closeCreateDialog">取消</el-button>
+          <el-button type="primary" @click="handleCreateModel">创建</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑模型对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      title="编辑模型"
+      width="600px"
+      @close="closeEditDialog"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="modelForm"
+        :rules="modelFormRules"
+        label-width="120px"
+      >
+        <el-form-item label="模型名称" prop="name">
+          <el-input v-model="modelForm.name" placeholder="请输入模型名称" />
+        </el-form-item>
+        <el-form-item label="模型路径" prop="model_path">
+          <el-input v-model="modelForm.model_path" placeholder="请输入模型文件路径" />
+        </el-form-item>
+        <el-form-item label="置信度阈值" prop="confidence_threshold">
+          <el-input-number
+            v-model="modelForm.confidence_threshold"
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :precision="2"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="IOU阈值" prop="iou_threshold">
+          <el-input-number
+            v-model="modelForm.iou_threshold"
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :precision="2"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="最大检测数" prop="max_detections">
+          <el-input-number
+            v-model="modelForm.max_detections"
+            :min="1"
+            :step="1"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="输入尺寸" prop="input_size">
+          <el-input-number
+            v-model="modelForm.input_size"
+            :min="1"
+            :step="1"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="是否激活">
+          <el-switch v-model="modelForm.is_active" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="closeEditDialog">取消</el-button>
+          <el-button type="primary" @click="handleUpdateModel">更新</el-button>
+        </div>
+      </template>
+    </el-dialog>
 
   </div>
 </template>

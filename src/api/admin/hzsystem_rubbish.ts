@@ -3,6 +3,7 @@ import type {
   RubbishCategory,
   RubbishCategoryListResponse,
   CreateRubbishCategoryRequest,
+  UpdateRubbishCategoryRequest,
   RubbishItem,
   RubbishItemListResponse,
   CreateRubbishItemRequest,
@@ -44,6 +45,31 @@ export function createRubbishCategoryAPI(data: CreateRubbishCategoryRequest): Pr
     url: '/api/rubbish/api/categories/',
     method: 'post',
     data
+  })
+}
+
+// 1.2 获取单个垃圾分类
+export function getRubbishCategoryAPI(id: number): Promise<RubbishCategory> {
+  return serviceAxios({
+    url: `/api/rubbish/api/categories/${id}/`,
+    method: 'get'
+  })
+}
+
+// 1.2 更新垃圾分类
+export function updateRubbishCategoryAPI(id: number, data: UpdateRubbishCategoryRequest): Promise<RubbishCategory> {
+  return serviceAxios({
+    url: `/api/rubbish/api/categories/${id}/`,
+    method: 'put',
+    data
+  })
+}
+
+// 1.2 删除垃圾分类
+export function deleteRubbishCategoryAPI(id: number): Promise<void> {
+  return serviceAxios({
+    url: `/api/rubbish/api/categories/${id}/`,
+    method: 'delete'
   })
 }
 

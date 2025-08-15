@@ -1,32 +1,80 @@
 <script setup lang="ts">
     import { Motion } from "motion-v";
     import { ref, onMounted, computed } from 'vue';
-    import { getDetectionRecordsAPI } from '@/api/admin/hzsystem_rubbish';
-    import type { DetectionRecord } from '@/types/apis/hzsystem_rubbish_T';
+    import { getDetectionRecordsAPI, getStatisticsOverviewAPI } from '@/api/admin/hzsystem_rubbish';
+    import type { DetectionRecord, StatisticsOverview } from '@/types/apis/hzsystem_rubbish_T';
 
-    // 检测历史数据
-    const historyData = {
-      todayDetection: {
-        value: 1234,
-        change: "+5.2%",
-        label: "今日检测",
-      },
-      weekDetection: {
-        value: 8567,
-        change: "+12.8%",
-        label: "本周检测",
-      },
-      monthDetection: {
-        value: 34567,
-        change: "+18.5%",
-        label: "本月检测",
-      },
-      errorDetection: {
-        value: 123,
-        change: "-2.1%",
-        label: "错误检测",
-      },
-    };
+    // 统计概览数据
+    const statisticsOverview = ref<StatisticsOverview>();
+    
+    // 检测历史数据（计算属性）- 基于检测记录详情数据
+    const historyData = computed(() => {
+      if (!detectionRecords.value.length) {
+        return {
+          todayDetection: {
+            value: 0,
+            change: "0%",
+            label: "总检测数",
+          },
+          weekDetection: {
+            value: 0,
+            change: "0%",
+            label: "总用户数",
+          },
+          monthDetection: {
+            value: 0,
+            change: "0%",
+            label: "准确率",
+          },
+          errorDetection: {
+            value: 0,
+            change: "0%",
+            label: "正确检测数",
+          },
+        };
+      }
+      
+      const records = detectionRecords.value;
+      
+      // 计算总检测数
+      const totalDetections = records.length;
+      
+      // 计算总用户数（去重）
+      const uniqueUsers = new Set(records.map(record => record.user));
+      const totalUsers = uniqueUsers.size;
+      
+      // 计算准确率（基于置信度平均值）
+      const avgConfidence = records.length > 0 
+        ? records.reduce((sum, record) => sum + record.confidence, 0) / records.length
+        : 0;
+      const accuracyRate = Math.round(avgConfidence * 1000) / 10; // 保留一位小数
+      
+      // 计算正确检测数
+      const correctDetections = records.filter(record => record.is_correct).length;
+      
+      return {
+        todayDetection: {
+          value: totalDetections,
+          change: "+0%",
+          label: "总检测数",
+        },
+        weekDetection: {
+          value: totalUsers,
+          change: "+0%",
+          label: "总用户数",
+        },
+        monthDetection: {
+          value: accuracyRate,
+          change: "+0%",
+          label: "准确率(%)",
+        },
+        errorDetection: {
+          value: correctDetections,
+          change: "+0%",
+          label: "正确检测数",
+        },
+      };
+    });
 
     // 检测记录数据
     const detectionRecords = ref<DetectionRecord[]>([]);
@@ -101,9 +149,20 @@
       return `${time.toFixed(2)}s`;
     };
 
+    // 获取统计概览数据
+    const fetchStatisticsOverview = async () => {
+      try {
+        const response = await getStatisticsOverviewAPI();
+        statisticsOverview.value = response;
+      } catch (error) {
+        console.error('获取统计概览失败:', error);
+      }
+    };
+
     // 页面加载时获取数据
     onMounted(() => {
       fetchDetectionRecords();
+      fetchStatisticsOverview();
     });
 
     // 动画配置

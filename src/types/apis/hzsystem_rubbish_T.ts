@@ -53,6 +53,16 @@ export interface CreateRubbishCategoryRequest {
   color: string;
 }
 
+// 更新垃圾分类请求类型
+export interface UpdateRubbishCategoryRequest {
+  name?: string;
+  category_type?: string;
+  description?: string;
+  disposal_method?: string;
+  icon?: string;
+  color?: string;
+}
+
 export interface RubbishItem {
   id: number;
   category_name: string;
