@@ -67,18 +67,24 @@ export const adminMenuItems: AdminHeader[] = [
   },
   {
     id: "4",
+    title: "垃圾分类管理",
+    icon: "Filter",
+    path: "/admin/classification",
+  },
+  {
+    id: "5",
     title: "宣传知识管理",
     icon: "Collection",
     path: "/admin/promoteKnowledge",
   },
   {
-    id: "5",
+    id: "6",
     title: "模型管理",
     icon: "SetUp",
     path: "/admin/modelParameter",
   },
   {
-    id: "6",
+    id: "7",
     title: "数据集展示",
     icon: "DataAnalysis",
     path: "/admin/datasetShow",
