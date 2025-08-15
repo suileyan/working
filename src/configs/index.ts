@@ -73,7 +73,7 @@ export const adminMenuItems: AdminHeader[] = [
   },
   {
     id: "5",
-    title: "模型参数管理",
+    title: "模型管理",
     icon: "SetUp",
     path: "/admin/modelParameter",
   },
